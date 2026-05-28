@@ -157,23 +157,31 @@ void _main(void)
 		set_game_speed(229);
 		//set_game_speed(150);
 
+	fprintf(stderr, "DBG: player_init done, calling game_load\n");
 	if(!game_load()) {
 		short i;
-
+		fprintf(stderr, "DBG: new game; map_room_active loop\n");
 		for(i = 0 ; i < zone_number ; i++) map_room_active(i, 1);
+		fprintf(stderr, "DBG: set_map(0)\n");
 		set_map(0);
 		glbs->player.items_found = 0;
 		glbs->player.items_equiped = 0;
+		fprintf(stderr, "DBG: player_set_position\n");
 		player_set_position(272, 400);
+		fprintf(stderr, "DBG: player_move down loop\n");
 		while(player_move(DOWN, 100));
+		fprintf(stderr, "DBG: game_write x2\n");
 		game_write(&glbs->save_game);
 		game_write(&glbs->respawn_point);
 	}
 
+	fprintf(stderr, "DBG: focus_camera\n");
 	focus_camera();
+	fprintf(stderr, "DBG: entering main loop\n");
 
+	{ static int once=0; if(!once){once=1; fprintf(stderr,"DBG: loop gc=%d freeze=%d\n", glbs->game_counter, getenv("METROID89_FREEZE")!=0);} }
 	while(!(_rowread(ESC_ROW) & ESC_KEY)) {
-		while(glbs->game_counter > 0 && repeat_loops < 4) {
+		while(!getenv("METROID89_FREEZE") && glbs->game_counter > 0 && repeat_loops < 4) {
 
 			player_process();
 			enemy_process();

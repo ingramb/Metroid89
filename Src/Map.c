@@ -433,7 +433,7 @@ char map_setup(char *map_file)
 	//	return FALSE;
 	//}
 
-	zone_name = NULL;
+	zone_name = "";   // was NULL; set_zone strcmp's it (NULL deref is fatal on host, not on calc)
 	//memset(&current_map, 0, sizeof(CURRENT_MAP));
 	glbs->current_map.data = NULL;
 	glbs->current_map.prop_data = NULL;
