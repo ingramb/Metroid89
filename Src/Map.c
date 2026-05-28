@@ -837,6 +837,9 @@ void check_special()
 						game_write(&glbs->respawn_point);
 						player_set_action(ACT_FRONT_WAIT);
 						bar_update();
+						// Native port: commit the save to disk now (was only on
+						// clean quit) so a crash can't lose it.
+						game_save();
 					}
 					free(m);
 					glbs->special.save.active = 2;
