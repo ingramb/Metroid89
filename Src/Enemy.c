@@ -663,7 +663,7 @@ void enemy_process()
 			}
 		}
 
-		if(TestCollideX8(e->x + e->sprite->x_offset, e->y + e->sprite->y_offset,
+		if(e->sprite && TestCollideX8(e->x + e->sprite->x_offset, e->y + e->sprite->y_offset,
 			e->sprite->width, e->sprite->hieght, px, py, 2, ph,
 			enemy_gfx[enemy->type].gfx + e->sprite->offset, player_size_mask)) {
 		//rect_overlap(e->x + e->x_off, e->y + e->y_off, e->width, e->hieght, px, py, pw, ph)) {

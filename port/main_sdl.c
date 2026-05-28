@@ -128,6 +128,22 @@ void platform_pump(void)
 
 int platform_should_quit(void) { return g_should_quit; }
 
+// Replacement for the calculator's AUTO_INT speed timer: return how many logic
+// steps should run this frame based on elapsed wall-clock time (~70 Hz, capped).
+int platform_logic_steps(void)
+{
+    static Uint32 last = 0, accum = 0;
+    Uint32 now = SDL_GetTicks();
+    int steps;
+    if (last == 0) last = now;
+    accum += now - last;
+    last = now;
+    steps = accum / 14;     // ~71 logic ticks/sec
+    accum %= 14;
+    if (steps > 4) steps = 4;
+    return steps;
+}
+
 short _rowread(short mask)
 {
     const Uint8 *k;

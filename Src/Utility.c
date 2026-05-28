@@ -338,11 +338,14 @@ void draw_number(short x, short y, unsigned short number, char *font, char digit
 // double-buffer/plane-flip dance (for the calculator's interrupt-driven gray
 // emulation) is unnecessary -- we render straight from the hidden planes.
 extern void screen_present(const unsigned char *light, const unsigned char *dark);
+extern int platform_logic_steps(void);
 
 void update_screen()
 {
 	screen_present(glbs->light_buffer, glbs->dark_buffer);
 	glbs->frames++;
+	// Drive the game clock (was an auto-interrupt on the calculator).
+	glbs->game_counter += platform_logic_steps();
 }
 
 char file_exists(const char *file)
