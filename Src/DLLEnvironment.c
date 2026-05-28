@@ -29,51 +29,36 @@ char snow_x_off;
 
 void draw_snow()
 {
-	long *light = glbs->light_buffer;
-	long *dark = glbs->dark_buffer;
-	long *sprite0 = ((long *)snow_gfx);
-	long *sprite1 = ((long *)(snow_gfx + 128));
-	long gfx0[32];
-	long gfx1[32];
-	short i = 0;
+	// snow_gfx is big-endian 32-bit; gfx0/gfx1 hold host-native computed words.
+	// Each row uses one 32x32 snow pattern word tiled across 5 plane words; the
+	// planes are 32-bit big-endian (not 'long' = 8 bytes on arm64).
+	unsigned char *light = glbs->light_buffer;
+	unsigned char *dark = glbs->dark_buffer;
+	uint32_t *snow0 = (uint32_t *)snow_gfx;
+	uint32_t *snow1 = (uint32_t *)(snow_gfx + 128);
+	uint32_t gfx0[32];
+	uint32_t gfx1[32];
+	short i, j, idx;
 	short cnt2 = 31 - snow_x_off;
 
 	for(i = 0 ; i < 32 ; i++) {
-		gfx0[i] = ~((*sprite0 >> snow_x_off) | (*sprite0 << cnt2));
-		gfx1[i] = (*sprite1 >> snow_x_off) | (*sprite1 << cnt2);
-		sprite0++;sprite1++;
+		uint32_t s0 = LD32(&snow0[i]), s1 = LD32(&snow1[i]);
+		gfx0[i] = ~((s0 >> snow_x_off) | (s0 << cnt2));
+		gfx1[i] = (s1 >> snow_x_off) | (s1 << cnt2);
 	}
 
-	sprite0 = gfx0 + 31 - snow_y_off;
-	sprite1 = gfx1 + 31 - snow_y_off;
+	idx = 31 - snow_y_off;
 
 	for(i = 0 ; i < 100 ; i++) {
-		*light++ &= *sprite0;
-		*dark &= *sprite0;
-		*dark++ |= *sprite1;
-
-		*light++ &= *sprite0;
-		*dark &= *sprite0;
-		*dark++ |= *sprite1;
-
-		*light++ &= *sprite0;
-		*dark &= *sprite0;
-		*dark++ |= *sprite1;
-
-		*light++ &= *sprite0;
-		*dark &= *sprite0;
-		*dark++ |= *sprite1;
-
-		*light &= *sprite0;
-		*dark &= *sprite0++;
-		*dark |= *sprite1++;
-
-		light = (void *)((char *)light + (14));
-		dark = (void *)((char *)dark + (14));
-		if((long)sprite0 == (long)(gfx0 + 32)) {
-			sprite0 = gfx0;
-			sprite1 = gfx1;
+		uint32_t g0 = gfx0[idx], g1 = gfx1[idx];
+		for(j = 0 ; j < 5 ; j++) {
+			ST32(light + j * 4, LD32(light + j * 4) & g0);
+			ST32(dark  + j * 4, (LD32(dark + j * 4) & g0) | g1);
 		}
+		light += 30;
+		dark += 30;
+		idx++;
+		if(idx == 32) idx = 0;
 	}
 }
 
@@ -205,8 +190,8 @@ void draw_water(unsigned char *water_gfx)
 	short y_pos;
 	short cnt2 = 31 - glbs->water.cnt;
 	short top = glbs->water.top;
-	unsigned long *frame = (long *)(water_gfx + glbs->water.frame * 128);
-	unsigned long gfx[64];
+	uint32_t *frame = (uint32_t *)(water_gfx + glbs->water.frame * 128);
+	uint32_t gfx[64];
 
 	if(glbs->water.type == WATER_LAVA) {
 		frame += 8 * 32;
@@ -214,14 +199,15 @@ void draw_water(unsigned char *water_gfx)
 	} else if(glbs->water.type == WATER_ACID)
 		frame += 8 * 32 + 10 * 32;
 
+	// water_gfx is big-endian 32-bit; read via LD32 so the wave rotate is correct.
 	for(i = 0 ; i < 32 ; i++)
-		gfx[i] = (frame[i] << glbs->water.cnt) | (frame[i] >> cnt2);
+		{ uint32_t f = LD32(&frame[i]); gfx[i] = (f << glbs->water.cnt) | (f >> cnt2); }
 
 	if(glbs->water.type == WATER_NORMAL) frame += 4 * 32;
 	else frame += 5 * 32;
 
 	for(i = 0 ; i < 32 ; i++)
-		gfx[32 + i] = (frame[i] << glbs->water.cnt) | (frame[i] >> cnt2);
+		{ uint32_t f = LD32(&frame[i]); gfx[32 + i] = (f << glbs->water.cnt) | (f >> cnt2); }
 
 	for(x = 0 ; x < 5 ; x++) {
 		y_pos = top - glbs->camera.y;
@@ -240,15 +226,16 @@ void draw_water(unsigned char *water_gfx)
 			} else if(y_pos + 32 >= 100) h = 100 - y_pos;
 			else h = 32;
 
+			// gfx[] holds host-native computed wave words; the planes are
+			// big-endian (LD32/ST32) and 32-bit (not 'long' = 8 bytes on arm64).
 			if(glbs->water.type == WATER_NORMAL) {
 				for(;h;h--,sprite+=4,addr1+=30,addr2+=30) {
-					*(unsigned long *)addr1 ^= (*(unsigned long *)sprite);
-					//*(unsigned long *)addr2 &= ~(*(unsigned long *)sprite);
+					ST32((void *)addr1, LD32((void *)addr1) ^ (*(uint32_t *)sprite));
 				}
 			} else {
 				for(;h;h--,sprite+=4,addr1+=30,addr2+=30) {
-					*(unsigned long *)addr1 &= ~(*(unsigned long *)sprite);
-					*(unsigned long *)addr2 |= (*(unsigned long *)sprite);
+					ST32((void *)addr1, LD32((void *)addr1) & ~(*(uint32_t *)sprite));
+					ST32((void *)addr2, LD32((void *)addr2) | (*(uint32_t *)sprite));
 				}
 			}
 

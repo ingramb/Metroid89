@@ -1718,6 +1718,10 @@ char game_save()
 	*(unsigned char *)(data++) = 0;
 	*(unsigned char *)(data) = OTH_TAG;
 
+	// Native port: the save "variable" lives in RAM; persist it to disk so it
+	// survives exit/restart (and shows up in the title save-slot menu).
+	ti_persist_var(SYMSTR(game_name));
+
 	return TRUE;
 }
 

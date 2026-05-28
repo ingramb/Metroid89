@@ -113,6 +113,44 @@ static void register_raw_file(const char *path, const char *varname) {
     v->used = 1;
 }
 
+// Save variables are persisted as their full heap image ([u16 size][data]).
+// Register one so SymFind/file_pointer/the title menu can read it back.
+static void register_sav_file(const char *path, const char *varname) {
+    long len = 0;
+    unsigned char *buf = read_file(path, &len);
+    Var *v;
+    if (!buf) return;
+    if (var_find(varname)) { free(buf); return; }
+    if (g_nvars >= MAX_VARS) { free(buf); return; }
+    v = &g_vars[g_nvars++];
+    memset(v, 0, sizeof(*v));
+    v->buf = buf;
+    v->buflen = len;
+    v->image = buf;                     // file IS the [size][data] heap image
+    v->sym.handle = (HANDLE)v->image;
+    strncpy(v->name, varname, sizeof(v->name) - 1);
+    strncpy(v->sym.name, varname, sizeof(v->sym.name) - 1);
+    v->used = 1;
+}
+
+// Persist a variable's heap image (2-byte size prefix + data) to <name>.sav.
+void ti_persist_var(const char *name) {
+    Var *v = var_find(name);
+    unsigned char *img;
+    unsigned len;
+    char path[1024];
+    FILE *f;
+    if (!v) return;
+    img = (unsigned char *)HeapDeref(v->sym.handle);
+    if (!img) return;
+    len = (unsigned)(img[0] | (img[1] << 8));   // data length (host-native u16)
+    snprintf(path, sizeof(path), "%s/%s.sav", DATA_DIR, name);
+    f = fopen(path, "wb");
+    if (!f) return;
+    fwrite(img, 1, len + 2, f);                 // size prefix + data
+    fclose(f);
+}
+
 static void ensure_loaded(void) {
     DIR *d;
     struct dirent *e;
@@ -120,6 +158,19 @@ static void ensure_loaded(void) {
     g_loaded = 1;
     d = opendir(DATA_DIR);
     if (!d) { fprintf(stderr, "tifile: cannot open data dir '%s'\n", DATA_DIR); return; }
+    // Pass 0: persisted save variables.
+    while ((e = readdir(d))) {
+        const char *dot = strrchr(e->d_name, '.');
+        if (dot && strcmp(dot, ".sav") == 0) {
+            char path[1024], var[16];
+            int n = (int)(dot - e->d_name);
+            if (n >= (int)sizeof(var)) n = sizeof(var) - 1;
+            memcpy(var, e->d_name, n); var[n] = 0;
+            snprintf(path, sizeof(path), "%s/%s", DATA_DIR, e->d_name);
+            register_sav_file(path, var);
+        }
+    }
+    rewinddir(d);
     // Pass 1: native .raw blobs take precedence (e.g. mtlevel.raw over timdemo2.89y).
     while ((e = readdir(d))) {
         const char *dot = strrchr(e->d_name, '.');

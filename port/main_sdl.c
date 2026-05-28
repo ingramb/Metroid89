@@ -197,9 +197,13 @@ short _rowread(short mask)
         if (k[SDL_SCANCODE_LSHIFT] || k[SDL_SCANCODE_RSHIFT]) r |= 32; // SHIFT (cheat)
         if (k[SDL_SCANCODE_SPACE])  r |= 64;   // DMND_KEY (diamond / jump)
     }
-    // ESC_ROW (0xffbf, bit6)
+    // ESC_ROW (0xffbf, bit6). Closing the window (SDL_QUIT) also returns ESC so
+    // the game loop exits cleanly and game_save() runs. METROID89_AUTOQUIT=<ms>
+    // is a test hook to force a clean quit after a delay.
     if (!(row & 0x0040)) {
-        if (k[SDL_SCANCODE_ESCAPE]) r |= 1;    // ESC_KEY
+        const char *aq = getenv("METROID89_AUTOQUIT");
+        if (k[SDL_SCANCODE_ESCAPE] || g_should_quit ||
+            (aq && SDL_GetTicks() > (Uint32)atoi(aq))) r |= 1;   // ESC_KEY
     }
     // APPS_ROW (0xffdf, bit5): APPS=bit0 (map), F1=bit7 (beam select)
     if (!(row & 0x0020)) {

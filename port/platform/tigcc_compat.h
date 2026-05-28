@@ -82,6 +82,7 @@ HSym       SymAdd(const char *name);
 SYM_ENTRY *DerefSym(HSym h);
 void      *HLock(HANDLE h);
 void       ti_unlock_file(const char *name);   // null-safe HeapUnlock by name
+void       ti_persist_var(const char *name);   // write a (save) variable to disk
 void      *HeapDeref(HANDLE h);
 short      HeapLock(HANDLE h);
 short      HeapUnlock(HANDLE h);
