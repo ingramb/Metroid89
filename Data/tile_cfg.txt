@@ -1,0 +1,7 @@
+tileB_gray_mtd.bin 0 0 0 compress
+tile0_gray_mtd.bin 0 0 0 compress
+tile1_gray_mtd.bin 0 0 0 compress
+tile2_gray_mtd.bin 0 0 0 compress
+tile3_gray_mtd.bin 0 0 0 compress
+tile4_gray_mtd.bin 0 0 0 compress
+tile5_gray_mtd.bin 0 0 0 compress
