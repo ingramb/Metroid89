@@ -513,6 +513,12 @@ void shots_process()
 				continue;
 		}
 
+		// A freshly-created shot is zeroed (header == NULL) and only gets its
+		// header set in shots_draw; compute it here too before dereferencing
+		// (the old NULL+offset read was harmless on the calc, fatal on host).
+		glbs->shots[i].header = glbs->shot_header + glbs->shot_data[type].frames[glbs->shots[i].frame] +
+			shot_patterns[glbs->shot_data[type].pattern][glbs->shots[i].gfx];
+
 		sx = glbs->shots[i].x + glbs->shots[i].header->x_offset;
 		sy = glbs->shots[i].y + glbs->shots[i].header->y_offset;
 		sw = glbs->shots[i].header->width;

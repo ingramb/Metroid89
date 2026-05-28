@@ -219,7 +219,8 @@ void enemy_init(ENEMY_HEADER *header, short number)
 	ENTITY_SIZE *size;
 	ENTITY *e;
 	short i, l, frame_size, type;
-	unsigned short a;
+	short a;   // holds an enemy type or NONE(-1); must be signed so the
+	           // extra_enemy_type chain terminates (was unsigned short -> 0xffff)
 	unsigned short gfx_size, old_gfx_size;
 	unsigned short hdr_size, old_hdr_size;
 	unsigned short skip_offset;

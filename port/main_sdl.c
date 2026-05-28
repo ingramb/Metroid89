@@ -25,6 +25,7 @@ static const Uint32 g_palette[4] = {
 };
 
 static Uint32 timer_cb(Uint32 interval, void *param);   // game-clock timer
+int platform_hz(void);
 
 int screen_init(void)
 {
@@ -46,7 +47,7 @@ int screen_init(void)
         SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
     if (!g_texture) { fprintf(stderr, "CreateTexture: %s\n", SDL_GetError()); return 0; }
 
-    SDL_AddTimer(14, timer_cb, NULL);   // ~71 Hz game clock
+    SDL_AddTimer(1000 / platform_hz(), timer_cb, NULL);   // game clock (~100 Hz)
 
     return 1;
 }
@@ -136,6 +137,18 @@ int platform_should_quit(void) { return g_should_quit; }
 // clock (~70 Hz), so logic advances and the countdown timer that delay()/fade
 // busy-wait loops depend on actually decrements.
 extern void platform_timer_tick(void);
+
+// Game-clock frequency. The calculator drove logic off its programmable timer
+// (~100 Hz here); tunable via METROID89_HZ.
+int platform_hz(void)
+{
+    const char *e = getenv("METROID89_HZ");
+    int hz = e ? atoi(e) : 100;
+    if (hz < 20)  hz = 20;
+    if (hz > 500) hz = 500;
+    return hz;
+}
+
 static Uint32 timer_cb(Uint32 interval, void *param)
 {
     (void)param;

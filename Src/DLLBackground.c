@@ -9,6 +9,7 @@
 #include "dllenvironment.h"
 #include "globals.h"
 #include <stdint.h>
+#include "bitops.h"
 
 const char sine_wave[] =	{2, 3, 3, 4, 4, 4, 3, 3, 2, 1, 1, 0, 0, 0, 1, 1};
 
@@ -32,9 +33,13 @@ void scroll_left(unsigned short* buffer,unsigned short lines) {
         unsigned short *w = buffer + l * 12;
         unsigned int carry = 0;
         int i;
+        // bg buffer holds big-endian 16-bit words (byte-preserved calc data);
+        // read/write big-endian so the row shifts as one MSB-first pixel value.
         for (i = 11; i >= 0; i--) {
-            unsigned int c = (w[i] >> 15) & 1;
-            w[i] = (unsigned short)((w[i] << 1) | carry);
+            unsigned short v = LD16(&w[i]);
+            unsigned int c = (v >> 15) & 1;
+            v = (unsigned short)((v << 1) | carry);
+            ST16(&w[i], v);
             carry = c;
         }
     }
@@ -47,8 +52,10 @@ void scroll_right(unsigned short* buffer,unsigned short lines) {
         unsigned int carry = 0;
         int i;
         for (i = 0; i < 12; i++) {
-            unsigned int c = w[i] & 1;
-            w[i] = (unsigned short)((w[i] >> 1) | (carry << 15));
+            unsigned short v = LD16(&w[i]);
+            unsigned int c = v & 1;
+            v = (unsigned short)((v >> 1) | (carry << 15));
+            ST16(&w[i], v);
             carry = c;
         }
     }

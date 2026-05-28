@@ -348,12 +348,14 @@ void update_screen()
 // Emulates the calculator's periodic auto-interrupt (~70 Hz). Driven by an SDL
 // timer thread (see main_sdl.c). Advances the logic clock and the countdown
 // timer that delay()/fade loops busy-wait on, plus the per-second FPS/clock.
+extern int platform_hz(void);
+
 void platform_timer_tick(void)
 {
 	if(glbs_base == NULL) return;
 	glbs_base->game_counter++;
 	if(glbs_base->timer > 0) glbs_base->timer--;
-	if(++glbs_base->fps_counter >= 70) {
+	if(++glbs_base->fps_counter >= platform_hz()) {
 		glbs_base->fps_counter = 0;
 		glbs_base->seconds++;
 		glbs_base->current_fps = glbs_base->frames;

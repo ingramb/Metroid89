@@ -137,22 +137,9 @@ void GraySpriteClipX8_MASK(
     unsigned char  endmask;
      				 short buffer;
 
-    if(!flash) {
-	    if(bytewidth == 4) {
-	    	GraySpriteClip32_MASK(x, y, h, (unsigned long *)sprite1,
-	    		glbs->light_buffer, glbs->dark_buffer);
-	    	return;
-	    } else if(bytewidth == 2) {
-	    	GraySpriteClip16_MASK(x, y, h, (unsigned short *)sprite1,
-	    		glbs->light_buffer, glbs->dark_buffer);
-	    	return;
-	    }
-	    else if(bytewidth == 1) {
-	    	GraySpriteClip8_MASK(x, y, h, sprite1,
-	    		glbs->light_buffer, glbs->dark_buffer);
-	    	return;
-	    }
-	  }
+    // Native port: the width-1/2/4 fast paths were hand-written m68k asm
+    // (the missing ClipSprite{8,16,32}_MASK_R.s). Use the generic byte-wise
+    // blit below for all widths -- it's endian-safe and handles any bytewidth.
 
     if(x <= -bytewidth * 8 || x >=  glbs->display_width || y < -h || y >= glbs->display_hieght) return;
 
