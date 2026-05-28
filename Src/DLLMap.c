@@ -8,6 +8,8 @@
 #include "dlltiles.h"
 #include "dllenvironment.h"
 #include "globals.h"
+#include "bitops.h"
+#include <stdint.h>
 
 //TILE_NODE_CLIPPED *tile_list_clipped = NULL;
 //TILE_NODE *tile_list = NULL;
@@ -32,7 +34,7 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 	short cnt, cnt2;
 	short i, h, s, x_pos, y_pos, x, y, loc, l;
 	unsigned char *light, *dark, *light_src, *dark_src;
-	unsigned long *sprite;
+	uint32_t *sprite;
 	unsigned short map[8 * 5];
 	short hieght = 32 * bg->hieght;
 	short water_level = water.top - glbs->camera.y;
@@ -76,52 +78,52 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 		char *table_ptr = (char *)ripple_table + glbs->camera.bg_ripple * 32;
 
 		hieght = 100;
-		sprite = (long *)(bg_tile);
+		sprite = (uint32_t *)(bg_tile);
 		for(i = 0 ; i < glbs->camera.bg_y_off ; i++) sprite += table_ptr[i];
 
 		for(i = 0, h = glbs->camera.bg_y_off ; h < 32 && i < water_level ; i++, h++) {
 			sprite += table_ptr[h];
 
-			*(long *)(light) = (*(sprite + map[loc]) << cnt) | (*(sprite + map[loc + 1]) >> cnt2);
-			*(long *)(dark) = (*(sprite + map[loc] + 32) << cnt) | (*(sprite + map[loc + 1] + 32) >> cnt2);
+			ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
+			ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
 
-			*(long *)(light + 4) = (*(sprite + map[loc + 1]) << cnt) | (*(sprite + map[loc + 2]) >> cnt2);
-			*(long *)(dark + 4) = (*(sprite + map[loc + 1] + 32) << cnt) | (*(sprite + map[loc + 2] + 32) >> cnt2);
+			ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
+			ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
 
-			*(long *)(light + 8) = (*(sprite + map[loc + 2]) << cnt) | (*(sprite + map[loc + 3]) >> cnt2);
-			*(long *)(dark + 8) = (*(sprite + map[loc + 2] + 32) << cnt) | (*(sprite + map[loc + 3] + 32) >> cnt2);
+			ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
+			ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
 
-			*(long *)(light + 12) = (*(sprite + map[loc + 3]) << cnt) | (*(sprite + map[loc + 4]) >> cnt2);
-			*(long *)(dark + 12) = (*(sprite + map[loc + 3] + 32) << cnt) | (*(sprite + map[loc + 4] + 32) >> cnt2);
+			ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
+			ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
 
-			*(long *)(light + 16) = (*(sprite + map[loc + 4]) << cnt) | (*(sprite + map[loc + 5]) >> cnt2);
-			*(long *)(dark + 16) = (*(sprite + map[loc + 4] + 32) << cnt) | (*(sprite + map[loc + 5] + 32) >> cnt2);
+			ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
+			ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
 
 			light += 30;
 			dark += 30;
 		}
 
 		while(i < hieght) {
-			sprite = (long *)bg_tile;
+			sprite = (uint32_t *)bg_tile;
 			loc += 8;
 
 			for(h = 0 ; h < 32 && i < hieght; h++, i++) {
 				sprite += table_ptr[h];
 
-				*(long *)(light) = (*(sprite + map[loc]) << cnt) | (*(sprite + map[loc + 1]) >> cnt2);
-				*(long *)(dark) = (*(sprite + map[loc] + 32) << cnt) | (*(sprite + map[loc + 1] + 32) >> cnt2);
+				ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
+				ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
 
-				*(long *)(light + 4) = (*(sprite + map[loc + 1]) << cnt) | (*(sprite + map[loc + 2]) >> cnt2);
-				*(long *)(dark + 4) = (*(sprite + map[loc + 1] + 32) << cnt) | (*(sprite + map[loc + 2] + 32) >> cnt2);
+				ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
+				ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
 
-				*(long *)(light + 8) = (*(sprite + map[loc + 2]) << cnt) | (*(sprite + map[loc + 3]) >> cnt2);
-				*(long *)(dark + 8) = (*(sprite + map[loc + 2] + 32) << cnt) | (*(sprite + map[loc + 3] + 32) >> cnt2);
+				ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
+				ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
 
-				*(long *)(light + 12) = (*(sprite + map[loc + 3]) << cnt) | (*(sprite + map[loc + 4]) >> cnt2);
-				*(long *)(dark + 12) = (*(sprite + map[loc + 3] + 32) << cnt) | (*(sprite + map[loc + 4] + 32) >> cnt2);
+				ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
+				ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
 
-				*(long *)(light + 16) = (*(sprite + map[loc + 4]) << cnt) | (*(sprite + map[loc + 5]) >> cnt2);
-				*(long *)(dark + 16) = (*(sprite + map[loc + 4] + 32) << cnt) | (*(sprite + map[loc + 5] + 32) >> cnt2);
+				ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
+				ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
 
 				light += 30;
 				dark += 30;
@@ -131,24 +133,24 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 		return;
 	}
 
-	sprite = (long *)(bg_tile + glbs->camera.bg_y_off * 4);
+	sprite = (uint32_t *)(bg_tile + glbs->camera.bg_y_off * 4);
 	s = (glbs->camera.bg_wave + water_level) & 15;
 
 	for(i = 0, h = glbs->camera.bg_y_off ; h < 32 && i < water_level ; i++, h++) {
-		*(long *)(light) = (*(sprite + map[loc]) << cnt) | (*(sprite + map[loc + 1]) >> cnt2);
-		*(long *)(dark) = (*(sprite + map[loc] + 32) << cnt) | (*(sprite + map[loc + 1] + 32) >> cnt2);
+		ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
+		ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
 
-		*(long *)(light + 4) = (*(sprite + map[loc + 1]) << cnt) | (*(sprite + map[loc + 2]) >> cnt2);
-		*(long *)(dark + 4) = (*(sprite + map[loc + 1] + 32) << cnt) | (*(sprite + map[loc + 2] + 32) >> cnt2);
+		ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
+		ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
 
-		*(long *)(light + 8) = (*(sprite + map[loc + 2]) << cnt) | (*(sprite + map[loc + 3]) >> cnt2);
-		*(long *)(dark + 8) = (*(sprite + map[loc + 2] + 32) << cnt) | (*(sprite + map[loc + 3] + 32) >> cnt2);
+		ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
+		ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
 
-		*(long *)(light + 12) = (*(sprite + map[loc + 3]) << cnt) | (*(sprite + map[loc + 4]) >> cnt2);
-		*(long *)(dark + 12) = (*(sprite + map[loc + 3] + 32) << cnt) | (*(sprite + map[loc + 4] + 32) >> cnt2);
+		ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
+		ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
 
-		*(long *)(light + 16) = (*(sprite + map[loc + 4]) << cnt) | (*(sprite + map[loc + 5]) >> cnt2);
-		*(long *)(dark + 16) = (*(sprite + map[loc + 4] + 32) << cnt) | (*(sprite + map[loc + 5] + 32) >> cnt2);
+		ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
+		ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
 
 		light += 30;
 		dark += 30;
@@ -156,24 +158,24 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 	}
 
 	while(i < water_level && i < hieght) {
-		sprite = (long *)bg_tile;
+		sprite = (uint32_t *)bg_tile;
 		loc += 8;
 
 		for(h = 0 ; h < 32 && i < water_level && i < hieght; h++, i++) {
-			*(long *)(light) = (*(sprite + map[loc]) << cnt) | (*(sprite + map[loc + 1]) >> cnt2);
-			*(long *)(dark) = (*(sprite + map[loc] + 32) << cnt) | (*(sprite + map[loc + 1] + 32) >> cnt2);
+			ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
+			ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
 
-			*(long *)(light + 4) = (*(sprite + map[loc + 1]) << cnt) | (*(sprite + map[loc + 2]) >> cnt2);
-			*(long *)(dark + 4) = (*(sprite + map[loc + 1] + 32) << cnt) | (*(sprite + map[loc + 2] + 32) >> cnt2);
+			ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
+			ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
 
-			*(long *)(light + 8) = (*(sprite + map[loc + 2]) << cnt) | (*(sprite + map[loc + 3]) >> cnt2);
-			*(long *)(dark + 8) = (*(sprite + map[loc + 2] + 32) << cnt) | (*(sprite + map[loc + 3] + 32) >> cnt2);
+			ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
+			ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
 
-			*(long *)(light + 12) = (*(sprite + map[loc + 3]) << cnt) | (*(sprite + map[loc + 4]) >> cnt2);
-			*(long *)(dark + 12) = (*(sprite + map[loc + 3] + 32) << cnt) | (*(sprite + map[loc + 4] + 32) >> cnt2);
+			ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
+			ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
 
-			*(long *)(light + 16) = (*(sprite + map[loc + 4]) << cnt) | (*(sprite + map[loc + 5]) >> cnt2);
-			*(long *)(dark + 16) = (*(sprite + map[loc + 4] + 32) << cnt) | (*(sprite + map[loc + 5] + 32) >> cnt2);
+			ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
+			ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
 
 			light += 30;
 			dark += 30;
@@ -188,20 +190,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			else l = loc;
 			cnt2 = 32 - cnt;
 
-			*(long *)(light) = (*(sprite + map[l]) << cnt) | (*(sprite + map[l + 1]) >> cnt2);
-			*(long *)(dark) = (*(sprite + map[l] + 32) << cnt) | (*(sprite + map[l + 1] + 32) >> cnt2);
+			ST32((void*)(light), ((LD32(sprite + map[l]) << cnt) | (LD32(sprite + map[l + 1]) >> cnt2)));
+			ST32((void*)(dark), ((LD32(sprite + map[l] + 32) << cnt) | (LD32(sprite + map[l + 1] + 32) >> cnt2)));
 
-			*(long *)(light + 4) = (*(sprite + map[l + 1]) << cnt) | (*(sprite + map[l + 2]) >> cnt2);
-			*(long *)(dark + 4) = (*(sprite + map[l + 1] + 32) << cnt) | (*(sprite + map[l + 2] + 32) >> cnt2);
+			ST32((void*)(light + 4), ((LD32(sprite + map[l + 1]) << cnt) | (LD32(sprite + map[l + 2]) >> cnt2)));
+			ST32((void*)(dark + 4), ((LD32(sprite + map[l + 1] + 32) << cnt) | (LD32(sprite + map[l + 2] + 32) >> cnt2)));
 
-			*(long *)(light + 8) = (*(sprite + map[l + 2]) << cnt) | (*(sprite + map[l + 3]) >> cnt2);
-			*(long *)(dark + 8) = (*(sprite + map[l + 2] + 32) << cnt) | (*(sprite + map[l + 3] + 32) >> cnt2);
+			ST32((void*)(light + 8), ((LD32(sprite + map[l + 2]) << cnt) | (LD32(sprite + map[l + 3]) >> cnt2)));
+			ST32((void*)(dark + 8), ((LD32(sprite + map[l + 2] + 32) << cnt) | (LD32(sprite + map[l + 3] + 32) >> cnt2)));
 
-			*(long *)(light + 12) = (*(sprite + map[l + 3]) << cnt) | (*(sprite + map[l + 4]) >> cnt2);
-			*(long *)(dark + 12) = (*(sprite + map[l + 3] + 32) << cnt) | (*(sprite + map[l + 4] + 32) >> cnt2);
+			ST32((void*)(light + 12), ((LD32(sprite + map[l + 3]) << cnt) | (LD32(sprite + map[l + 4]) >> cnt2)));
+			ST32((void*)(dark + 12), ((LD32(sprite + map[l + 3] + 32) << cnt) | (LD32(sprite + map[l + 4] + 32) >> cnt2)));
 
-			*(long *)(light + 16) = (*(sprite + map[l + 4]) << cnt) | (*(sprite + map[l + 5]) >> cnt2);
-			*(long *)(dark + 16) = (*(sprite + map[l + 4] + 32) << cnt) | (*(sprite + map[l + 5] + 32) >> cnt2);
+			ST32((void*)(light + 16), ((LD32(sprite + map[l + 4]) << cnt) | (LD32(sprite + map[l + 5]) >> cnt2)));
+			ST32((void*)(dark + 16), ((LD32(sprite + map[l + 4] + 32) << cnt) | (LD32(sprite + map[l + 5] + 32) >> cnt2)));
 
 			light += 30;
 			dark += 30;
@@ -211,7 +213,7 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 	}
 
 	while(i < hieght) {
-		sprite = (long *)bg_tile;
+		sprite = (uint32_t *)bg_tile;
 		loc += 8;
 
 		for(h = 0 ; h < 32 && i < hieght ; h++, i++) {
@@ -220,20 +222,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			else l = loc;
 			cnt2 = 32 - cnt;
 
-			*(long *)(light) = (*(sprite + map[l]) << cnt) | (*(sprite + map[l + 1]) >> cnt2);
-			*(long *)(dark) = (*(sprite + map[l] + 32) << cnt) | (*(sprite + map[l + 1] + 32) >> cnt2);
+			ST32((void*)(light), ((LD32(sprite + map[l]) << cnt) | (LD32(sprite + map[l + 1]) >> cnt2)));
+			ST32((void*)(dark), ((LD32(sprite + map[l] + 32) << cnt) | (LD32(sprite + map[l + 1] + 32) >> cnt2)));
 
-			*(long *)(light + 4) = (*(sprite + map[l + 1]) << cnt) | (*(sprite + map[l + 2]) >> cnt2);
-			*(long *)(dark + 4) = (*(sprite + map[l + 1] + 32) << cnt) | (*(sprite + map[l + 2] + 32) >> cnt2);
+			ST32((void*)(light + 4), ((LD32(sprite + map[l + 1]) << cnt) | (LD32(sprite + map[l + 2]) >> cnt2)));
+			ST32((void*)(dark + 4), ((LD32(sprite + map[l + 1] + 32) << cnt) | (LD32(sprite + map[l + 2] + 32) >> cnt2)));
 
-			*(long *)(light + 8) = (*(sprite + map[l + 2]) << cnt) | (*(sprite + map[l + 3]) >> cnt2);
-			*(long *)(dark + 8) = (*(sprite + map[l + 2] + 32) << cnt) | (*(sprite + map[l + 3] + 32) >> cnt2);
+			ST32((void*)(light + 8), ((LD32(sprite + map[l + 2]) << cnt) | (LD32(sprite + map[l + 3]) >> cnt2)));
+			ST32((void*)(dark + 8), ((LD32(sprite + map[l + 2] + 32) << cnt) | (LD32(sprite + map[l + 3] + 32) >> cnt2)));
 
-			*(long *)(light + 12) = (*(sprite + map[l + 3]) << cnt) | (*(sprite + map[l + 4]) >> cnt2);
-			*(long *)(dark + 12) = (*(sprite + map[l + 3] + 32) << cnt) | (*(sprite + map[l + 4] + 32) >> cnt2);
+			ST32((void*)(light + 12), ((LD32(sprite + map[l + 3]) << cnt) | (LD32(sprite + map[l + 4]) >> cnt2)));
+			ST32((void*)(dark + 12), ((LD32(sprite + map[l + 3] + 32) << cnt) | (LD32(sprite + map[l + 4] + 32) >> cnt2)));
 
-			*(long *)(light + 16) = (*(sprite + map[l + 4]) << cnt) | (*(sprite + map[l + 5]) >> cnt2);
-			*(long *)(dark + 16) = (*(sprite + map[l + 4] + 32) << cnt) | (*(sprite + map[l + 5] + 32) >> cnt2);
+			ST32((void*)(light + 16), ((LD32(sprite + map[l + 4]) << cnt) | (LD32(sprite + map[l + 5]) >> cnt2)));
+			ST32((void*)(dark + 16), ((LD32(sprite + map[l + 4] + 32) << cnt) | (LD32(sprite + map[l + 5] + 32) >> cnt2)));
 
 			light += 30;
 			dark += 30;
@@ -246,16 +248,16 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 	dark_src = glbs->dark_buffer;
 
 	for(; i < footer_level ; i++, light += 30, dark += 30, light_src += 30, dark_src += 30) {
-		*(long *)(light) = *(long *)(light_src);
-		*(long *)(dark) = *(long *)(dark_src);
-		*(long *)(light + 4) = *(long *)(light_src + 4);
-		*(long *)(dark + 4) = *(long *)(dark_src + 4);
-		*(long *)(light + 8) = *(long *)(light_src + 8);
-		*(long *)(dark + 8) = *(long *)(dark_src + 8);
-		*(long *)(light + 12) = *(long *)(light_src + 12);
-		*(long *)(dark + 12) = *(long *)(dark_src + 12);
-		*(long *)(light + 16) = *(long *)(light_src + 16);
-		*(long *)(dark + 16) = *(long *)(dark_src + 16);
+		ST32((void*)(light), (LD32(light_src)));
+		ST32((void*)(dark), (LD32(dark_src)));
+		ST32((void*)(light + 4), (LD32(light_src + 4)));
+		ST32((void*)(dark + 4), (LD32(dark_src + 4)));
+		ST32((void*)(light + 8), (LD32(light_src + 8)));
+		ST32((void*)(dark + 8), (LD32(dark_src + 8)));
+		ST32((void*)(light + 12), (LD32(light_src + 12)));
+		ST32((void*)(dark + 12), (LD32(dark_src + 12)));
+		ST32((void*)(light + 16), (LD32(light_src + 16)));
+		ST32((void*)(dark + 16), (LD32(dark_src + 16)));
 	}
 
 	if(i >= 100) return;
@@ -267,8 +269,8 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			light = glbs->light_buffer + 30 * i + 4 * x;
 			dark = glbs->dark_buffer + 30 * i + 4 * x;
 			for(h = i ; h < 100 ; h++) {
-				*(long *)light = *sprite;
-				*(long *)dark = *(sprite + 32);
+				ST32((void*)light, (*sprite));
+				ST32((void*)dark, (LD32(sprite + 32)));
 				sprite++;
 				light += 30;
 				dark += 30;
@@ -286,7 +288,7 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 	short cnt, cnt2;
 	short i, h, s, x_pos, y_pos, x, y, loc, l;
 	unsigned char *light, *dark, *light_src, *dark_src;
-	unsigned long *sprite;
+	uint32_t *sprite;
 	unsigned short map[8 * 5];
 	short hieght = 32 * bg->hieght;
 	short water_level = water.top - glbs->camera.y;
@@ -365,7 +367,7 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 	next_line[0]--;
 	light = glbs->light_buffer + next_line[0] * 30;
 	dark = glbs->dark_buffer + next_line[0] * 30;
-	sprite = (long *)bg_tile + glbs->camera.bg_y_off + next_line[0];
+	sprite = (uint32_t *)bg_tile + glbs->camera.bg_y_off + next_line[0];
 	i = next_line[0] + 1;
 	h = glbs->camera.bg_y_off + next_line[0];
 	s = (glbs->camera.bg_wave + water_level + next_line[0]) & 15;
@@ -377,52 +379,52 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 		char *table_ptr = (char *)ripple_table + glbs->camera.bg_ripple * 32;
 
 		hieght = 100;
-		sprite = (long *)(bg_tile);
+		sprite = (uint32_t *)(bg_tile);
 		for(i = 0 ; i < glbs->camera.bg_y_off ; i++) sprite += table_ptr[i];
 
 		for(i = 0, h = glbs->camera.bg_y_off ; h < 32 && i < water_level ; i++, h++) {
 			sprite += table_ptr[h];
 
-			*(long *)(light) = (*(sprite + map[loc]) << cnt) | (*(sprite + map[loc + 1]) >> cnt2);
-			*(long *)(dark) = (*(sprite + map[loc] + 32) << cnt) | (*(sprite + map[loc + 1] + 32) >> cnt2);
+			ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
+			ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
 
-			*(long *)(light + 4) = (*(sprite + map[loc + 1]) << cnt) | (*(sprite + map[loc + 2]) >> cnt2);
-			*(long *)(dark + 4) = (*(sprite + map[loc + 1] + 32) << cnt) | (*(sprite + map[loc + 2] + 32) >> cnt2);
+			ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
+			ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
 
-			*(long *)(light + 8) = (*(sprite + map[loc + 2]) << cnt) | (*(sprite + map[loc + 3]) >> cnt2);
-			*(long *)(dark + 8) = (*(sprite + map[loc + 2] + 32) << cnt) | (*(sprite + map[loc + 3] + 32) >> cnt2);
+			ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
+			ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
 
-			*(long *)(light + 12) = (*(sprite + map[loc + 3]) << cnt) | (*(sprite + map[loc + 4]) >> cnt2);
-			*(long *)(dark + 12) = (*(sprite + map[loc + 3] + 32) << cnt) | (*(sprite + map[loc + 4] + 32) >> cnt2);
+			ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
+			ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
 
-			*(long *)(light + 16) = (*(sprite + map[loc + 4]) << cnt) | (*(sprite + map[loc + 5]) >> cnt2);
-			*(long *)(dark + 16) = (*(sprite + map[loc + 4] + 32) << cnt) | (*(sprite + map[loc + 5] + 32) >> cnt2);
+			ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
+			ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
 
 			light += 30;
 			dark += 30;
 		}
 
 		while(i < hieght) {
-			sprite = (long *)bg_tile;
+			sprite = (uint32_t *)bg_tile;
 			loc += 8;
 
 			for(h = 0 ; h < 32 && i < hieght; h++, i++) {
 				sprite += table_ptr[h];
 
-				*(long *)(light) = (*(sprite + map[loc]) << cnt) | (*(sprite + map[loc + 1]) >> cnt2);
-				*(long *)(dark) = (*(sprite + map[loc] + 32) << cnt) | (*(sprite + map[loc + 1] + 32) >> cnt2);
+				ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
+				ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
 
-				*(long *)(light + 4) = (*(sprite + map[loc + 1]) << cnt) | (*(sprite + map[loc + 2]) >> cnt2);
-				*(long *)(dark + 4) = (*(sprite + map[loc + 1] + 32) << cnt) | (*(sprite + map[loc + 2] + 32) >> cnt2);
+				ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
+				ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
 
-				*(long *)(light + 8) = (*(sprite + map[loc + 2]) << cnt) | (*(sprite + map[loc + 3]) >> cnt2);
-				*(long *)(dark + 8) = (*(sprite + map[loc + 2] + 32) << cnt) | (*(sprite + map[loc + 3] + 32) >> cnt2);
+				ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
+				ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
 
-				*(long *)(light + 12) = (*(sprite + map[loc + 3]) << cnt) | (*(sprite + map[loc + 4]) >> cnt2);
-				*(long *)(dark + 12) = (*(sprite + map[loc + 3] + 32) << cnt) | (*(sprite + map[loc + 4] + 32) >> cnt2);
+				ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
+				ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
 
-				*(long *)(light + 16) = (*(sprite + map[loc + 4]) << cnt) | (*(sprite + map[loc + 5]) >> cnt2);
-				*(long *)(dark + 16) = (*(sprite + map[loc + 4] + 32) << cnt) | (*(sprite + map[loc + 5] + 32) >> cnt2);
+				ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
+				ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
 
 				light += 30;
 				dark += 30;
@@ -433,20 +435,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 	}
 
 	for(; h < 32 && i <= water_level;) {
-		*(long *)(light) = (*(sprite + map[loc]) << cnt) | (*(sprite + map[loc + 1]) >> cnt2);
-		*(long *)(dark) = (*(sprite + map[loc] + 32) << cnt) | (*(sprite + map[loc + 1] + 32) >> cnt2);
+		ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
+		ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
 
-		*(long *)(light + 4) = (*(sprite + map[loc + 1]) << cnt) | (*(sprite + map[loc + 2]) >> cnt2);
-		*(long *)(dark + 4) = (*(sprite + map[loc + 1] + 32) << cnt) | (*(sprite + map[loc + 2] + 32) >> cnt2);
+		ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
+		ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
 
-		*(long *)(light + 8) = (*(sprite + map[loc + 2]) << cnt) | (*(sprite + map[loc + 3]) >> cnt2);
-		*(long *)(dark + 8) = (*(sprite + map[loc + 2] + 32) << cnt) | (*(sprite + map[loc + 3] + 32) >> cnt2);
+		ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
+		ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
 
-		*(long *)(light + 12) = (*(sprite + map[loc + 3]) << cnt) | (*(sprite + map[loc + 4]) >> cnt2);
-		*(long *)(dark + 12) = (*(sprite + map[loc + 3] + 32) << cnt) | (*(sprite + map[loc + 4] + 32) >> cnt2);
+		ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
+		ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
 
-		*(long *)(light + 16) = (*(sprite + map[loc + 4]) << cnt) | (*(sprite + map[loc + 5]) >> cnt2);
-		*(long *)(dark + 16) = (*(sprite + map[loc + 4] + 32) << cnt) | (*(sprite + map[loc + 5] + 32) >> cnt2);
+		ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
+		ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
 
 		if(next_line[i] == 1) {
 			i++; h++;
@@ -465,20 +467,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 		loc += 8;
 
 		for(; h < 32 && i <= water_level && i <= hieght;) {
-			*(long *)(light) = (*(sprite + map[loc]) << cnt) | (*(sprite + map[loc + 1]) >> cnt2);
-			*(long *)(dark) = (*(sprite + map[loc] + 32) << cnt) | (*(sprite + map[loc + 1] + 32) >> cnt2);
+			ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
+			ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
 
-			*(long *)(light + 4) = (*(sprite + map[loc + 1]) << cnt) | (*(sprite + map[loc + 2]) >> cnt2);
-			*(long *)(dark + 4) = (*(sprite + map[loc + 1] + 32) << cnt) | (*(sprite + map[loc + 2] + 32) >> cnt2);
+			ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
+			ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
 
-			*(long *)(light + 8) = (*(sprite + map[loc + 2]) << cnt) | (*(sprite + map[loc + 3]) >> cnt2);
-			*(long *)(dark + 8) = (*(sprite + map[loc + 2] + 32) << cnt) | (*(sprite + map[loc + 3] + 32) >> cnt2);
+			ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
+			ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
 
-			*(long *)(light + 12) = (*(sprite + map[loc + 3]) << cnt) | (*(sprite + map[loc + 4]) >> cnt2);
-			*(long *)(dark + 12) = (*(sprite + map[loc + 3] + 32) << cnt) | (*(sprite + map[loc + 4] + 32) >> cnt2);
+			ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
+			ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
 
-			*(long *)(light + 16) = (*(sprite + map[loc + 4]) << cnt) | (*(sprite + map[loc + 5]) >> cnt2);
-			*(long *)(dark + 16) = (*(sprite + map[loc + 4] + 32) << cnt) | (*(sprite + map[loc + 5] + 32) >> cnt2);
+			ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
+			ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
 
 			if(next_line[i] == 1) {
 				i++; h++;
@@ -498,20 +500,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			else l = loc;
 			cnt2 = 32 - cnt;
 
-			*(long *)(light) = (*(sprite + map[l]) << cnt) | (*(sprite + map[l + 1]) >> cnt2);
-			*(long *)(dark) = (*(sprite + map[l] + 32) << cnt) | (*(sprite + map[l + 1] + 32) >> cnt2);
+			ST32((void*)(light), ((LD32(sprite + map[l]) << cnt) | (LD32(sprite + map[l + 1]) >> cnt2)));
+			ST32((void*)(dark), ((LD32(sprite + map[l] + 32) << cnt) | (LD32(sprite + map[l + 1] + 32) >> cnt2)));
 
-			*(long *)(light + 4) = (*(sprite + map[l + 1]) << cnt) | (*(sprite + map[l + 2]) >> cnt2);
-			*(long *)(dark + 4) = (*(sprite + map[l + 1] + 32) << cnt) | (*(sprite + map[l + 2] + 32) >> cnt2);
+			ST32((void*)(light + 4), ((LD32(sprite + map[l + 1]) << cnt) | (LD32(sprite + map[l + 2]) >> cnt2)));
+			ST32((void*)(dark + 4), ((LD32(sprite + map[l + 1] + 32) << cnt) | (LD32(sprite + map[l + 2] + 32) >> cnt2)));
 
-			*(long *)(light + 8) = (*(sprite + map[l + 2]) << cnt) | (*(sprite + map[l + 3]) >> cnt2);
-			*(long *)(dark + 8) = (*(sprite + map[l + 2] + 32) << cnt) | (*(sprite + map[l + 3] + 32) >> cnt2);
+			ST32((void*)(light + 8), ((LD32(sprite + map[l + 2]) << cnt) | (LD32(sprite + map[l + 3]) >> cnt2)));
+			ST32((void*)(dark + 8), ((LD32(sprite + map[l + 2] + 32) << cnt) | (LD32(sprite + map[l + 3] + 32) >> cnt2)));
 
-			*(long *)(light + 12) = (*(sprite + map[l + 3]) << cnt) | (*(sprite + map[l + 4]) >> cnt2);
-			*(long *)(dark + 12) = (*(sprite + map[l + 3] + 32) << cnt) | (*(sprite + map[l + 4] + 32) >> cnt2);
+			ST32((void*)(light + 12), ((LD32(sprite + map[l + 3]) << cnt) | (LD32(sprite + map[l + 4]) >> cnt2)));
+			ST32((void*)(dark + 12), ((LD32(sprite + map[l + 3] + 32) << cnt) | (LD32(sprite + map[l + 4] + 32) >> cnt2)));
 
-			*(long *)(light + 16) = (*(sprite + map[l + 4]) << cnt) | (*(sprite + map[l + 5]) >> cnt2);
-			*(long *)(dark + 16) = (*(sprite + map[l + 4] + 32) << cnt) | (*(sprite + map[l + 5] + 32) >> cnt2);
+			ST32((void*)(light + 16), ((LD32(sprite + map[l + 4]) << cnt) | (LD32(sprite + map[l + 5]) >> cnt2)));
+			ST32((void*)(dark + 16), ((LD32(sprite + map[l + 4] + 32) << cnt) | (LD32(sprite + map[l + 5] + 32) >> cnt2)));
 
 			if(next_line[i] == 1) {
 				i++; h++;
@@ -539,20 +541,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			else l = loc;
 			cnt2 = 32 - cnt;
 
-			*(long *)(light) = (*(sprite + map[l]) << cnt) | (*(sprite + map[l + 1]) >> cnt2);
-			*(long *)(dark) = (*(sprite + map[l] + 32) << cnt) | (*(sprite + map[l + 1] + 32) >> cnt2);
+			ST32((void*)(light), ((LD32(sprite + map[l]) << cnt) | (LD32(sprite + map[l + 1]) >> cnt2)));
+			ST32((void*)(dark), ((LD32(sprite + map[l] + 32) << cnt) | (LD32(sprite + map[l + 1] + 32) >> cnt2)));
 
-			*(long *)(light + 4) = (*(sprite + map[l + 1]) << cnt) | (*(sprite + map[l + 2]) >> cnt2);
-			*(long *)(dark + 4) = (*(sprite + map[l + 1] + 32) << cnt) | (*(sprite + map[l + 2] + 32) >> cnt2);
+			ST32((void*)(light + 4), ((LD32(sprite + map[l + 1]) << cnt) | (LD32(sprite + map[l + 2]) >> cnt2)));
+			ST32((void*)(dark + 4), ((LD32(sprite + map[l + 1] + 32) << cnt) | (LD32(sprite + map[l + 2] + 32) >> cnt2)));
 
-			*(long *)(light + 8) = (*(sprite + map[l + 2]) << cnt) | (*(sprite + map[l + 3]) >> cnt2);
-			*(long *)(dark + 8) = (*(sprite + map[l + 2] + 32) << cnt) | (*(sprite + map[l + 3] + 32) >> cnt2);
+			ST32((void*)(light + 8), ((LD32(sprite + map[l + 2]) << cnt) | (LD32(sprite + map[l + 3]) >> cnt2)));
+			ST32((void*)(dark + 8), ((LD32(sprite + map[l + 2] + 32) << cnt) | (LD32(sprite + map[l + 3] + 32) >> cnt2)));
 
-			*(long *)(light + 12) = (*(sprite + map[l + 3]) << cnt) | (*(sprite + map[l + 4]) >> cnt2);
-			*(long *)(dark + 12) = (*(sprite + map[l + 3] + 32) << cnt) | (*(sprite + map[l + 4] + 32) >> cnt2);
+			ST32((void*)(light + 12), ((LD32(sprite + map[l + 3]) << cnt) | (LD32(sprite + map[l + 4]) >> cnt2)));
+			ST32((void*)(dark + 12), ((LD32(sprite + map[l + 3] + 32) << cnt) | (LD32(sprite + map[l + 4] + 32) >> cnt2)));
 
-			*(long *)(light + 16) = (*(sprite + map[l + 4]) << cnt) | (*(sprite + map[l + 5]) >> cnt2);
-			*(long *)(dark + 16) = (*(sprite + map[l + 4] + 32) << cnt) | (*(sprite + map[l + 5] + 32) >> cnt2);
+			ST32((void*)(light + 16), ((LD32(sprite + map[l + 4]) << cnt) | (LD32(sprite + map[l + 5]) >> cnt2)));
+			ST32((void*)(dark + 16), ((LD32(sprite + map[l + 4] + 32) << cnt) | (LD32(sprite + map[l + 5] + 32) >> cnt2)));
 
 			if(next_line[i] == 1) {
 				i++; h++;
@@ -579,16 +581,16 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 		//printf("%d", i);
 		//pause();
 
-		*(long *)(light) = *(long *)(light_src);
-		*(long *)(dark) = *(long *)(dark_src);
-		*(long *)(light + 4) = *(long *)(light_src + 4);
-		*(long *)(dark + 4) = *(long *)(dark_src + 4);
-		*(long *)(light + 8) = *(long *)(light_src + 8);
-		*(long *)(dark + 8) = *(long *)(dark_src + 8);
-		*(long *)(light + 12) = *(long *)(light_src + 12);
-		*(long *)(dark + 12) = *(long *)(dark_src + 12);
-		*(long *)(light + 16) = *(long *)(light_src + 16);
-		*(long *)(dark + 16) = *(long *)(dark_src + 16);
+		ST32((void*)(light), (LD32(light_src)));
+		ST32((void*)(dark), (LD32(dark_src)));
+		ST32((void*)(light + 4), (LD32(light_src + 4)));
+		ST32((void*)(dark + 4), (LD32(dark_src + 4)));
+		ST32((void*)(light + 8), (LD32(light_src + 8)));
+		ST32((void*)(dark + 8), (LD32(dark_src + 8)));
+		ST32((void*)(light + 12), (LD32(light_src + 12)));
+		ST32((void*)(dark + 12), (LD32(dark_src + 12)));
+		ST32((void*)(light + 16), (LD32(light_src + 16)));
+		ST32((void*)(dark + 16), (LD32(dark_src + 16)));
 
 		if(next_line[i] == 1) {
 			i++;
@@ -612,8 +614,8 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			light = glbs->light_buffer + 30 * i + 4 * x;
 			dark = glbs->dark_buffer + 30 * i + 4 * x;
 			for(h = i ; h <= 100 ; h++) {
-				*(long *)light = *sprite;
-				*(long *)dark = *(sprite + 32);
+				ST32((void*)light, (*sprite));
+				ST32((void*)dark, (LD32(sprite + 32)));
 				sprite++;
 				light += 30;
 				dark += 30;
@@ -689,13 +691,13 @@ void draw_map0()
 				if(blit) {
 					long mask = ~(65520 << cnt);
 					for (; h ; h--, light += 30, dark += 30) {
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 					}
 				} else {
 					for (; h ; h--, light += 30, dark += 30) {
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 					}
 				}
 			}
@@ -733,79 +735,79 @@ void draw_map0()
 
 					if(glbs->tile_data[tile1].blit) {
 						long mask = ~(65520 << cnt);
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
 					} else {
 						//for (h = 12 ; h ; h--, light += 30, dark += 30) {
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 						light += 30; dark += 30;
 						//}
 					}
@@ -841,13 +843,13 @@ void draw_map0()
 				if(glbs->tile_data[tile1].blit) {
 					long mask = ~(65520 << cnt);
 					for (; h ; h--, light += 30, dark += 30) {
-						*(long*)light &= mask; *(long*)dark &= mask;
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (mask)); ST32((void*)dark, LD32((void*)dark) & (mask));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 					}
 				} else {
 					for (; h ; h--, light += 30, dark += 30) {
-						*(long*)light &= ~((long)(*sprite0)<<cnt); *(long*)dark &= ~((long)(*sprite0++)<<cnt);
-						*(long*)light |= (long)(*sprite0++)<<cnt; *(long*)dark |= (long)(*sprite0++)<<cnt;
+						ST32((void*)light, LD32((void*)light) & (~((long)(LD16(sprite0))<<cnt))); ST32((void*)dark, LD32((void*)dark) & (~((long)(LD16(sprite0++))<<cnt)));
+						ST32((void*)light, LD32((void*)light) | ((long)(LD16(sprite0++))<<cnt)); ST32((void*)dark, LD32((void*)dark) | ((long)(LD16(sprite0++))<<cnt));
 					}
 				}
 			}
@@ -882,3 +884,61 @@ void set_prop_data(short x, short y, unsigned char a)
 }
 
 
+
+// Reimplementation of the missing DLLDrawMap.s. draw_map0() defers background
+// tiles into tile_list / tile_list_clipped (sentinel offset == -1); this second
+// pass blits them. Blit tiles use a constant 12-bit mask + 2 words/row (light,
+// dark); non-blit tiles use 3 words/row (shared clear-mask, light, dark) -- the
+// same per-row logic as draw_map0's immediate path. Big-endian word access.
+void draw_map1(void *light_base, void *dark_base, TILE_DATA *tile_data,
+               TILE_NODE *tile_list, TILE_NODE_CLIPPED *tile_list_clipped)
+{
+	TILE_NODE *n;
+	TILE_NODE_CLIPPED *c;
+
+	for(c = tile_list_clipped ; c->offset != -1 ; c++) {
+		unsigned char *l = (unsigned char *)light_base + c->offset;
+		unsigned char *d = (unsigned char *)dark_base + c->offset;
+		unsigned short *sp = c->tile;
+		short cnt = c->cnt;
+		short h = c->h;
+		if(c->blit) {
+			unsigned long mask = ~((unsigned long)65520 << cnt);
+			for( ; h ; h--, l += 30, d += 30) {
+				ST32(l, (LD32(l) & mask) | ((unsigned long)LD16(sp++) << cnt));
+				ST32(d, (LD32(d) & mask) | ((unsigned long)LD16(sp++) << cnt));
+			}
+		} else {
+			for( ; h ; h--, l += 30, d += 30) {
+				unsigned long w0 = LD16(sp); sp++;
+				unsigned long w1 = LD16(sp++);
+				unsigned long w2 = LD16(sp++);
+				ST32(l, (LD32(l) & ~(w0 << cnt)) | (w1 << cnt));
+				ST32(d, (LD32(d) & ~(w0 << cnt)) | (w2 << cnt));
+			}
+		}
+	}
+
+	for(n = tile_list ; n->offset != -1 ; n++) {
+		unsigned char *l = (unsigned char *)light_base + n->offset;
+		unsigned char *d = (unsigned char *)dark_base + n->offset;
+		unsigned short *sp = tile_data[n->tile].data;
+		short cnt = n->cnt;
+		short h = 12;
+		if(tile_data[n->tile].blit) {
+			unsigned long mask = ~((unsigned long)65520 << cnt);
+			for( ; h ; h--, l += 30, d += 30) {
+				ST32(l, (LD32(l) & mask) | ((unsigned long)LD16(sp++) << cnt));
+				ST32(d, (LD32(d) & mask) | ((unsigned long)LD16(sp++) << cnt));
+			}
+		} else {
+			for( ; h ; h--, l += 30, d += 30) {
+				unsigned long w0 = LD16(sp); sp++;
+				unsigned long w1 = LD16(sp++);
+				unsigned long w2 = LD16(sp++);
+				ST32(l, (LD32(l) & ~(w0 << cnt)) | (w1 << cnt));
+				ST32(d, (LD32(d) & ~(w0 << cnt)) | (w2 << cnt));
+			}
+		}
+	}
+}

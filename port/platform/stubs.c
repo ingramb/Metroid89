@@ -56,8 +56,5 @@ void GraySpriteClip8_MASK (short x,short y,short h,unsigned char*s,void*lb,void*
 void GraySpriteClip16_MASK(short x,short y,short h,unsigned short*s,void*lb,void*db){(void)x;(void)y;(void)h;(void)s;(void)lb;(void)db;}
 void GraySpriteClip32_MASK(short x,short y,short h,unsigned long*s,void*lb,void*db){(void)x;(void)y;(void)h;(void)s;(void)lb;(void)db;}
 
-// The map foreground blitter (missing DLLDrawMap.s) -- reimplemented in Phase 4.
-void draw_map1(void *light, void *dark, TILE_DATA *tile_data, TILE_NODE *tl, TILE_NODE_CLIPPED *tlc) {
-    (void)light; (void)dark; (void)tile_data; (void)tl; (void)tlc;
-}
+// draw_map1 is now implemented in DLLMap.c.
 
