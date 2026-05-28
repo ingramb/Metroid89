@@ -32,6 +32,13 @@ set(GAME_SRC
     Src/EntityTest.c
     Src/DLLSystem.c
     Src/DLLTitle.c
+    # metpack is built in memory at startup from these native data tables
+    # (was a separate flash file on the calculator).
+    Src/Metdata.c
+    Src/DLLFrameData.c
+    Src/DLLEnemyData.c
+    Src/DLLShotData.c
+    Src/DLLBackgroundData.c
     # Src/unpack.c -- ttunpack decompressor is m68k asm; ported to C in Phase 1.
 )
 

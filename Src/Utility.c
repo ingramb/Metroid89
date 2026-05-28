@@ -265,9 +265,11 @@ char load_metsys()
 	return TRUE;
 }
 
+extern void *build_metpack(void);   // Metdata.c (native port: built in memory)
+
 char load_metpack()
 {
-	glbs->metpack_base = file_pointer(SYMSTR("metpack"));
+	glbs->metpack_base = build_metpack();
 	glbs->metpack_header = (METPACK_HEADER *)glbs->metpack_base;
 	return (glbs->metpack_base != NULL);
 }

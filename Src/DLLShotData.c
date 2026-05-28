@@ -6,7 +6,7 @@
 #include "utility.h"
 #include "animation.h"
 
-const SHOT_COMBO combo_data[SHOT_END_OF_LIST] = {
+const SHOT_COMBO src_combo_data[SHOT_END_OF_LIST] = {
 	{STYPE_NORMAL, COMBO_NORMAL, 1, FALSE}, //normal
 	{STYPE_WAVE, COMBO_WAVE, 1, TRUE}, //normal wave
 	{STYPE_ICE, COMBO_NORMAL, 1, FALSE}, //normal ice
@@ -51,7 +51,7 @@ const SHOT_COMBO combo_data[SHOT_END_OF_LIST] = {
 	{STYPE_ENEMY_FIREBLIP, COMBO_NORMAL, 40, FALSE}, //enemy fireblip
 };
 
-const SHOT_DATA shot_data[STYPE_END_OF_LIST] = {
+const SHOT_DATA src_shot_data[STYPE_END_OF_LIST] = {
 	{{0, -1, -1}, 1,
 		DAMAGE_NORMAL, 12, 6, 10, NONE, 200, 250, NONE, 0, SMALL_EXPLODE, NONE, FALSE, FALSE}, //normal shot
 

@@ -53,7 +53,7 @@ const unsigned char mountains[] = {
 	12,12,12,12,12,12,12,12,12,12,
 };
 
-_BACKGROUND_HEADER bg_list[BG_NUMBER] = {
+_BACKGROUND_HEADER src_bg_list[BG_NUMBER] = {
 	{8, 4, 0, 25, 25, 0, 0, cave_map, NULL},
 	{8, 8, 0, 25, 25, 0, 0, ship_map, NULL},
 	{10, 4, 3, 0, 25, 20, 0, surface_map, mountains},

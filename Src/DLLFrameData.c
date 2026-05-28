@@ -46,7 +46,7 @@ const ENTITY_ANIMATION space_jump = {4, 0, {87, 3, 88, 3, 89, 3, 90, 3}};
 const ENTITY_ANIMATION wall_kick_ready = {1, 0, {91, 10}};
 const ENTITY_ANIMATION wall_kick = {1, 0, {92, 1}};
 
-const _PLAYER_ACTION player_action[ACT_END_OF_LIST] = {
+const _PLAYER_ACTION src_player_action[ACT_END_OF_LIST] = {
 
 	{{&face_front, &face_front, &face_front, &face_front, &face_front, &face_front},
 		0, FALSE, FALSE, FALSE, TRUE, TYPE_STAND, SIZE_STAND, NONE},

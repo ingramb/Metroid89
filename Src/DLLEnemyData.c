@@ -145,7 +145,7 @@ const ENTITY_ANIMATION pipeguy2 = {8, 0, {0, 3, 1, 3, 2, 3, 1, 3, 3, 3, 4, 3, 5,
 //===============================================================================
 const ENTITY_ANIMATION particle = {1, 0, {0, 1}};
 
-const _ENEMY_ACTION enemy_action[ACT_END_OF_ENEMY] = {
+const _ENEMY_ACTION src_enemy_action[ACT_END_OF_ENEMY] = {
 	{&pirate_walk, -1, 30, TRUE, ACT_PIRATE_LOOK},
 	{&pirate_look, 110, 0, TRUE, ACT_PIRATE_WALK},
 	{&pirate_shoot, 112, 0, TRUE, ACT_PIRATE_WALK},
@@ -278,7 +278,7 @@ typedef struct {
 #define SUCKER_ARMOR DAMAGE_NORMAL | DAMAGE_CHARGE | DAMAGE_PLASMA | DAMAGE_CHARGE_SCREW | DAMAGE_MISSILE
 #define IMMUNE 0xffff
 
-const ENEMY_DATA enemy_data[ENEMY_END_OF_LIST] = {
+const ENEMY_DATA src_enemy_data[ENEMY_END_OF_LIST] = {
 	{{-2, 0, 140, 61, 140, 61, FALSE},
 	0, {NONE, NONE, NONE, NONE}, /*ship*/
 		0, NO_EXTRA_FRAMES, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, NO_REVERSE, 0, 0, 0, NONE, 0, NONE, ACT_SHIP, 0, NONE},
