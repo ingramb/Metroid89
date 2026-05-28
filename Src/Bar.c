@@ -16,6 +16,8 @@
 #include "system.h"
 #include "bar.h"
 #include "globals.h"
+#include "bitops.h"
+#include <stdint.h>
 
 void *status_bar_light = NULL;
 void *status_bar_dark = NULL;
@@ -198,12 +200,12 @@ void draw_map_tile(short x, short y, unsigned char tile, char width, void *light
     short h = 5;
 
     for (;h;h--,addr1+=width,addr2+=width) {
-        *(long*)addr1|=(long)(*sprite1++)<<cnt;
-        *(long*)addr2|=(long)(*sprite2++)<<cnt;
+        ST32((void*)addr1, LD32((void*)addr1) | ((long)(*sprite1++)<<cnt));
+        ST32((void*)addr2, LD32((void*)addr2) | ((long)(*sprite2++)<<cnt));
     }
 
     if(tile & 0x80)
-    	*(long*)(dark + offset + width * 2) &= ~((long)0x20 << cnt);
+    	ST32((void*)(dark + offset + width * 2), LD32((void*)(dark + offset + width * 2)) & (~((long)0x20 << cnt)));
 }
 
 void draw_energy(short x, short y, short hp, short hp_max,
@@ -317,8 +319,8 @@ void map_update_draw()
 	}
 
 	for(y = 6 ; y < 9 ; y++) {
-		*((long *)map_light + y) |= ~0b11111111111111111100011111111111;
-		*((long *)map_dark + y) &= 0b11111111111111111100011111111111;
+		ST32((uint32_t*)map_light + y, LD32((uint32_t*)map_light + y) | (~0b11111111111111111100011111111111));
+		ST32((uint32_t*)map_dark + y, LD32((uint32_t*)map_dark + y) & (0b11111111111111111100011111111111));
 	}
 }
 
@@ -410,8 +412,8 @@ void status_screen()
 			*(short *)light &= 0b1111100000000000; light += 2;
 			*(short *)dark &= 0b1111100000000000; dark += 2;
 			for(j = 0 ; j < 4 ; j++) {
-				*(long *)light = 0; light += 4;
-				*(long *)dark = 0; dark += 4;
+				ST32((void*)light, 0); light += 4;
+				ST32((void*)dark, 0); dark += 4;
 			}
 			*(short *)light &= 0b0000000000011111; light += 12;
 			*(short *)dark &=0b0000000000011111; dark += 12;
@@ -569,11 +571,11 @@ void bar_process()
 void bar_draw()
 {
 	register short i;
-	register long *dest1 = (long *)(glbs->light_buffer);
-	register long *dest2 = (long *)(glbs->dark_buffer);
-	register long *src1 = status_bar_light;
-	register long *src2 = status_bar_dark;
-	register long *mask = status_bar_mask;
+	register uint32_t *dest1 = (long *)(glbs->light_buffer);
+	register uint32_t *dest2 = (long *)(glbs->dark_buffer);
+	register uint32_t *src1 = status_bar_light;
+	register uint32_t *src2 = status_bar_dark;
+	register uint32_t *mask = status_bar_mask;
 
 	if(update) {
 		update = FALSE;
