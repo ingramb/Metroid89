@@ -1216,7 +1216,13 @@ void map::set_zone_names()
 
 short flip_short(short a)
 {
+#ifdef MAPCONV_NATIVE
+	// Native port: the consumer (game) now runs little-endian, same as this
+	// host, so emit native byte order -- no calculator big-endian flip.
+	return a;
+#else
 	return ((a >> 8) & 0xff) | ((a & 0xff) << 8);
+#endif
 }
 
 #define CLEFT 1
@@ -1906,14 +1912,22 @@ void map::export_data(char *outfile_name)
 		offset += door_number[i] * sizeof(CALC_DOOR);*/
 	}
 
+#ifdef MAPCONV_NATIVE
+	// Native port: write each per-file blob raw (this is exactly the var-data
+	// the game's file_pointer() hands to map_setup). outfile_name is a dir.
+	for(i = 0 ; i < current_file + 1 ; i++) {
+		if(i == 0) sprintf(current_file_name, "%s/mtlevel.raw", outfile_name);
+		else       sprintf(current_file_name, "%s/mtlevel%d.raw", outfile_name, i);
+		temp = fopen(current_file_name, "wb");
+		fwrite(buffer[i], file_size[i], 1, temp);
+		fclose(temp);
+		printf("mapconv: wrote %s (%u bytes)\n", current_file_name, file_size[i]);
+	}
+#else
 	strcpy(current_file_name, outfile_name);
 	strcpy(oncalc_name, "mtlevel");
 
 	//"timdemo2.89y";
-
-	//clear(screen);
-	//textprintf(screen, font, 0, 0, COLOR_WHITE, "CHECKPOINT");
-	//pause();
 
 	for(i = 0 ; i < current_file + 1 ; i++) {
 		oth_buffer =
@@ -1922,10 +1936,6 @@ void map::export_data(char *outfile_name)
 		fwrite(oth_buffer, oth_length, 1, temp);
 		fclose(temp);
 		delete oth_buffer;
-
-		//clear(screen);
-		//textprintf(screen, font, 0, 0, COLOR_WHITE, "filesize:%d oth_length:%d", file_size[i], oth_length);
-		//pause();
 
 		if(i == 0) {
 			current_file_name[strlen(outfile_name) - 4] = '0';
@@ -1940,6 +1950,7 @@ void map::export_data(char *outfile_name)
 		oncalc_name[7]++;
 		current_file_name[strlen(outfile_name) - 4]++;
 	}
+#endif
 
 	for(i = 0 ; i < map_number ; i++){
 		//clear(screen);

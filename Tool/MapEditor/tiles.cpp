@@ -42,6 +42,8 @@ void tileset::load_tiles(BITMAP *bmp, short width, short hieght, bool skip_empty
 	short x_pos = 0;
 	short y_pos = 0;
 	short i = 0, j = 0;
+
+	if(!bmp) { tile_number = 0; tiles = 0; return; }  // headless: no tile graphics
 	short last_not_empty = 0;
 	short max_number = (bmp->w * bmp->h) / (width * hieght);
 	bool empty;

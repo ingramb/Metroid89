@@ -141,9 +141,12 @@ void _main(void)
 #endif
 
 	load_metsys();
-	
-	title_screen(game_name, draw_energy, draw_time);
-	
+
+	// Native port dev hack: METROID89_SKIPTITLE jumps straight into gameplay,
+	// bypassing the title screen + save-select menu (which need interactive input).
+	if(!getenv("METROID89_SKIPTITLE"))
+		title_screen(game_name, draw_energy, draw_time);
+
 	load_metgame();
 
 	player_init();

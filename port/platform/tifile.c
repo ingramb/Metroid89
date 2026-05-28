@@ -71,6 +71,11 @@ static void register_ti_file(const char *path) {
     dataoff = buf[0x3C] | (buf[0x3D] << 8) | (buf[0x3E] << 16) | (buf[0x3F] << 24);
     if (dataoff + 6 > (unsigned long)len) { free(buf); return; }
 
+    {
+        char nm[16];
+        memcpy(nm, &buf[0x40], 8); nm[8] = 0;
+        if (var_find(nm)) { free(buf); return; }   // already have it (e.g. native .raw)
+    }
     if (g_nvars >= MAX_VARS) { free(buf); return; }
     v = &g_vars[g_nvars++];
     memset(v, 0, sizeof(*v));
@@ -84,6 +89,30 @@ static void register_ti_file(const char *path) {
     v->used = 1;
 }
 
+// Register a raw native blob (e.g. mtlevel.raw produced by mapconv) as a
+// variable. These are the var-data directly, so we prepend a 2-byte size
+// slot to fit the [size][data] heap-image convention; file_pointer() returns
+// the data start.
+static void register_raw_file(const char *path, const char *varname) {
+    long len = 0;
+    unsigned char *data = read_file(path, &len);
+    Var *v;
+    if (!data) return;
+    if (var_find(varname)) { free(data); return; }
+    if (g_nvars >= MAX_VARS) { free(data); return; }
+    v = &g_vars[g_nvars++];
+    memset(v, 0, sizeof(*v));
+    v->buf = malloc(len + 2);
+    v->buflen = len + 2;
+    memcpy(v->buf + 2, data, len);
+    free(data);
+    strncpy(v->name, varname, sizeof(v->name) - 1);
+    v->image = v->buf;                  // [2-byte slot][data]; file_pointer -> +2
+    v->sym.handle = (HANDLE)v->image;
+    strncpy(v->sym.name, varname, sizeof(v->sym.name) - 1);
+    v->used = 1;
+}
+
 static void ensure_loaded(void) {
     DIR *d;
     struct dirent *e;
@@ -91,6 +120,20 @@ static void ensure_loaded(void) {
     g_loaded = 1;
     d = opendir(DATA_DIR);
     if (!d) { fprintf(stderr, "tifile: cannot open data dir '%s'\n", DATA_DIR); return; }
+    // Pass 1: native .raw blobs take precedence (e.g. mtlevel.raw over timdemo2.89y).
+    while ((e = readdir(d))) {
+        const char *dot = strrchr(e->d_name, '.');
+        if (dot && strcmp(dot, ".raw") == 0) {
+            char path[1024], var[16];
+            int n = (int)(dot - e->d_name);
+            if (n >= (int)sizeof(var)) n = sizeof(var) - 1;
+            memcpy(var, e->d_name, n); var[n] = 0;
+            snprintf(path, sizeof(path), "%s/%s", DATA_DIR, e->d_name);
+            register_raw_file(path, var);
+        }
+    }
+    rewinddir(d);
+    // Pass 2: the bundled TI variable files.
     while ((e = readdir(d))) {
         const char *dot = strrchr(e->d_name, '.');
         if (!dot) continue;
