@@ -184,6 +184,11 @@ SYM_ENTRY *DerefSym(HSym h) {
     return &g_vars[h.folder - 1].sym;
 }
 
+void ti_unlock_file(const char *name) {
+    SYM_ENTRY *e = SymFindPtr(name, 0);
+    if (e) HeapUnlock(e->handle);
+}
+
 // --- AMS heap. Handles are just pointers (file images or malloc blocks). ---
 void  *HeapDeref(HANDLE h)        { return (void *)h; }
 void  *HLock(HANDLE h)            { return (void *)h; }

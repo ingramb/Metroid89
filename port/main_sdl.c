@@ -24,6 +24,8 @@ static const Uint32 g_palette[4] = {
     0xFF000000, // 11 black      (both)
 };
 
+static Uint32 timer_cb(Uint32 interval, void *param);   // game-clock timer
+
 int screen_init(void)
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
@@ -43,6 +45,8 @@ int screen_init(void)
     g_texture = SDL_CreateTexture(g_renderer, SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
     if (!g_texture) { fprintf(stderr, "CreateTexture: %s\n", SDL_GetError()); return 0; }
+
+    SDL_AddTimer(14, timer_cb, NULL);   // ~71 Hz game clock
 
     return 1;
 }
@@ -128,20 +132,15 @@ void platform_pump(void)
 
 int platform_should_quit(void) { return g_should_quit; }
 
-// Replacement for the calculator's AUTO_INT speed timer: return how many logic
-// steps should run this frame based on elapsed wall-clock time (~70 Hz, capped).
-int platform_logic_steps(void)
+// Calculator auto-interrupt emulation: a background SDL timer ticks the game
+// clock (~70 Hz), so logic advances and the countdown timer that delay()/fade
+// busy-wait loops depend on actually decrements.
+extern void platform_timer_tick(void);
+static Uint32 timer_cb(Uint32 interval, void *param)
 {
-    static Uint32 last = 0, accum = 0;
-    Uint32 now = SDL_GetTicks();
-    int steps;
-    if (last == 0) last = now;
-    accum += now - last;
-    last = now;
-    steps = accum / 14;     // ~71 logic ticks/sec
-    accum %= 14;
-    if (steps > 4) steps = 4;
-    return steps;
+    (void)param;
+    platform_timer_tick();
+    return interval;
 }
 
 short _rowread(short mask)
@@ -151,6 +150,19 @@ short _rowread(short mask)
     short r = 0;
     platform_pump();
     k = SDL_GetKeyboardState(NULL);
+
+    // Dev autopilot: continuously cycle SEL then DMND so we reliably walk past
+    // the title pause() (needs a SEL press+release) and the save menu (needs
+    // DMND), regardless of how long setup took.
+    if (getenv("METROID89_AUTOPLAY") && !(row & 0x0001)) {
+        Uint32 t = SDL_GetTicks();
+        if (t < 300) return 0;
+        switch ((t / 150) % 4) {
+            case 0: return 16;   // SEL (2nd)
+            case 2: return 64;   // DMND (diamond)
+            default: return 0;
+        }
+    }
 
     // ARROWS_ROW (0xfffe, bit0): movement + 2nd/diamond/shift.
     if (!(row & 0x0001)) {

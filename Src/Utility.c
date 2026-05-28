@@ -338,14 +338,27 @@ void draw_number(short x, short y, unsigned short number, char *font, char digit
 // double-buffer/plane-flip dance (for the calculator's interrupt-driven gray
 // emulation) is unnecessary -- we render straight from the hidden planes.
 extern void screen_present(const unsigned char *light, const unsigned char *dark);
-extern int platform_logic_steps(void);
 
 void update_screen()
 {
 	screen_present(glbs->light_buffer, glbs->dark_buffer);
 	glbs->frames++;
-	// Drive the game clock (was an auto-interrupt on the calculator).
-	glbs->game_counter += platform_logic_steps();
+}
+
+// Emulates the calculator's periodic auto-interrupt (~70 Hz). Driven by an SDL
+// timer thread (see main_sdl.c). Advances the logic clock and the countdown
+// timer that delay()/fade loops busy-wait on, plus the per-second FPS/clock.
+void platform_timer_tick(void)
+{
+	if(glbs_base == NULL) return;
+	glbs_base->game_counter++;
+	if(glbs_base->timer > 0) glbs_base->timer--;
+	if(++glbs_base->fps_counter >= 70) {
+		glbs_base->fps_counter = 0;
+		glbs_base->seconds++;
+		glbs_base->current_fps = glbs_base->frames;
+		glbs_base->frames = 0;
+	}
 }
 
 char file_exists(const char *file)

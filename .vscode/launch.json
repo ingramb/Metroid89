@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Metroid 89",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/metroid89",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "MIMode": "lldb",
+      "preLaunchTask": "build"
+    },
+    {
+      "name": "Run Metroid 89 (skip title, no bg)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/metroid89",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        { "name": "METROID89_SKIPTITLE", "value": "1" },
+        { "name": "METROID89_NOBG", "value": "1" },
+        { "name": "METROID89_CLEAR", "value": "1" }
+      ],
+      "MIMode": "lldb",
+      "preLaunchTask": "build"
+    }
+  ]
+}

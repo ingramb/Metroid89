@@ -18,7 +18,10 @@ typedef struct {
 
 #define set_game_speed(speed) poke(0x600017,speed)
 #define absolute(a) ((a)>0 ? (a) : -(a))
-#define unlock_file(file) HeapUnlock(SymFindPtr(SYMSTR(file),0)->handle)
+// Native port: null-safe. The original deref'd SymFindPtr()->handle directly,
+// which crashes on the host when the variable doesn't exist (e.g. an absent
+// save file); on the calculator that read was harmless.
+#define unlock_file(file) ti_unlock_file(SYMSTR(file))
 
 //==================================================
 //Constants for low-level keyboard access

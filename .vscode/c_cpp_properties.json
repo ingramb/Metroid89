@@ -1,0 +1,19 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Mac",
+      "includePath": [
+        "${workspaceFolder}/port",
+        "${workspaceFolder}/port/platform",
+        "${workspaceFolder}/Src",
+        "/opt/homebrew/include",
+        "/opt/homebrew/include/SDL2"
+      ],
+      "defines": ["DATA_DIR=\".\""],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c11",
+      "intelliSenseMode": "macos-clang-arm64"
+    }
+  ]
+}

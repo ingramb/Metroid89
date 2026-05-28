@@ -81,6 +81,7 @@ SYM_ENTRY *SymFindPtr(const char *name, short flags);
 HSym       SymAdd(const char *name);
 SYM_ENTRY *DerefSym(HSym h);
 void      *HLock(HANDLE h);
+void       ti_unlock_file(const char *name);   // null-safe HeapUnlock by name
 void      *HeapDeref(HANDLE h);
 short      HeapLock(HANDLE h);
 short      HeapUnlock(HANDLE h);

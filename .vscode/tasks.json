@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "env": {
+      "PATH": "/opt/homebrew/bin:${env:PATH}"
+    }
+  },
+  "tasks": [
+    {
+      "label": "cmake configure",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["-S", ".", "-B", "build", "-DCMAKE_BUILD_TYPE=Debug"],
+      "problemMatcher": []
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build"],
+      "dependsOn": "cmake configure",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "run",
+      "type": "shell",
+      "command": "${workspaceFolder}/build/metroid89",
+      "dependsOn": "build",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    },
+    {
+      "label": "clean",
+      "type": "shell",
+      "command": "rm",
+      "args": ["-rf", "build"],
+      "problemMatcher": []
+    }
+  ]
+}
