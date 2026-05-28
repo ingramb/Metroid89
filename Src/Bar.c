@@ -335,7 +335,7 @@ void draw_time(short x, short y, unsigned long s)
 	draw_number(x + 10, y, minutes, glbs->font, 2, glbs->light_buffer, glbs->dark_buffer);
 }
 
-void draw_rect(short x, short y, short w, short h, char mode)
+static void draw_rect(short x, short y, short w, short h, char mode)
 {
 	short i;
 
@@ -585,9 +585,9 @@ void bar_draw()
 		map_update_draw();
 	}
 
-	(long)src1 -= bar_position * 30;
-	(long)src2 -= bar_position * 30;
-	(long)mask -= bar_position * 30;
+	src1 = (void *)((char *)src1 - bar_position * 30);
+	src2 = (void *)((char *)src2 - bar_position * 30);
+	mask = (void *)((char *)mask - bar_position * 30);
 
 	for(i = 13 + bar_position; i > 0 ; i--) {
 		*dest1 &= *mask; *dest1++ |= *src1++;
@@ -605,8 +605,8 @@ void bar_draw()
 		*dest1 &= *mask; *dest1 |= *src1;
 		*dest2 &= *mask; *dest2 |= *src2;
 
-		(char *)dest1 += 14; (char *)dest2 += 14;
-		(char *)src1 += 14; (char *)src2 += 14; (char *)mask += 14;
+		dest1 = (void *)((char *)dest1 + 14); dest2 = (void *)((char *)dest2 + 14);
+		src1 = (void *)((char *)src1 + 14); src2 = (void *)((char *)src2 + 14); mask = (void *)((char *)mask + 14);
 	}
 
 	if(zone_position < 100) {
@@ -620,7 +620,7 @@ void bar_draw()
 			*dest1++ = *src1; *dest2++ = *src1++;
 			*dest1++ = *src1; *dest2++ = *src1++;
 			*dest1 = *src1; *dest2 = *src1;
-			(long)dest1 += 14; (long)dest2 += 14; (long)src1 += 14;
+			dest1 = (void *)((char *)dest1 + 14); dest2 = (void *)((char *)dest2 + 14); src1 = (void *)((char *)src1 + 14);
 		}
 	}
 
@@ -633,8 +633,8 @@ void bar_draw()
 		*dest2 &= 0b11111100000000000000000000000000;
 		*dest1 |= *src1++;
 		*dest2 |= *src2++;
-		(long)dest1 += 30;
-		(long)dest2 += 30;
+		dest1 = (void *)((char *)dest1 + 30);
+		dest2 = (void *)((char *)dest2 + 30);
 	}
 	*dest1 &= 0b11111100000000000000000000000000;
 	*dest2 &= 0b11111100000000000000000000000000;

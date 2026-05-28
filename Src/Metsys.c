@@ -4,7 +4,6 @@
 //#define USE_TI89              // Compile for TI-89
 #define NO_CALC_CHECK
 #define NO_EXIT_SUPPORT
-#define __IN_DLL__
 
 #include "dll.h"
 #include "dllexports.h"

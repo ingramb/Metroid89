@@ -4,7 +4,6 @@
 #ifndef __DLL_TILES__
 #define __DLL_TILES__
 
-#define __IN_DLL__
 #include "tiles.h"
 
 char tile_setup();

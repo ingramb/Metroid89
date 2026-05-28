@@ -101,13 +101,13 @@ enum {
 
 #ifndef __IN_DLL__
 //#define tile_data _DLL_glbvar(TILE_DATA *, DLL_TILE_DATA)
-#define tile_setup _DLL_call(char, (), TILE_SETUP)
-#define tile_cleanup _DLL_call(void, (), TILE_CLEANUP)
-#define tileset_load _DLL_call(char, (short, char), TILESET_LOAD)
-#define hole_enemy_check _DLL_call(void, (), HOLE_ENEMY_CHECK)
-#define hole_reset _DLL_call(void, (), HOLE_RESET)
-#define hole_create _DLL_call(char, (short, short, unsigned short), HOLE_CREATE)
-#define hole_process _DLL_call(void, (), HOLE_PROCESS)
+char tile_setup(void);
+void tile_cleanup(void);
+char tileset_load(short, char);
+void hole_enemy_check(void);
+void hole_reset(void);
+char hole_create(short, short, unsigned short);
+void hole_process(void);
 #endif
 
 #endif

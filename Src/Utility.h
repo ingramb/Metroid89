@@ -68,9 +68,7 @@ char load_metgame();
 char load_metsys();
 char load_metpack();
 
-short __attribute__((__stkparm__)) OldUnpackBuffer(unsigned char *src, unsigned char *dest);
-
-#define decompress OldUnpackBuffer
+unsigned short decompress(unsigned char *src, unsigned char *dest);
 
 #endif
 

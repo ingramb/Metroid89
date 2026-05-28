@@ -2,14 +2,14 @@
 // Created 11/14/2002; 5:05:55 PM
 void GraySpriteClip8_OR(short x, short y, short h, unsigned char* sprite1);
 void GraySpriteClip8_MASK(
-	short x asm("%d0"), short y asm("%d1"), short h asm("%d2"),
-	char *sprt asm("%a0"), void *light_buffer asm("%a1"), void *dark_buffer asm("%a2"));
+	short x, short y, short h,
+	char *sprt, void *light_buffer, void *dark_buffer);
 void GraySpriteClip16_MASK(
-	short x asm("%d0"), short y asm("%d1"), short h asm("%d2"),
-	short *sprt asm("%a0"), void *light_buffer asm("%a1"), void *dark_buffer asm("%a2"));
+	short x, short y, short h,
+	short *sprt, void *light_buffer, void *dark_buffer);
 void GraySpriteClip32_MASK(
-	short x asm("%d0"), short y asm("%d1"), short h asm("%d2"),
-	long *sprt asm("%a0"), void *light_buffer asm("%a1"), void *dark_buffer asm("%a2"));
+	short x, short y, short h,
+	long *sprt, void *light_buffer, void *dark_buffer);
 
 void GraySpriteClipX8_MASK(
 	short x,short y,short h, unsigned char* sprite1, short bytewidth, char flash);

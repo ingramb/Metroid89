@@ -4,7 +4,6 @@
 #ifndef __DLL_BLOCK__
 #define __DLL_BLOCK__
 
-#define __IN_DLL__
 #include "block.h"
 
 char block_setup();

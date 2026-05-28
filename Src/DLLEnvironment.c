@@ -1,7 +1,6 @@
 // C Source File
 // Created 8/28/02; 4:52:05 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>         // Include All Header Files
 #include "dllutility.h"
 #include "dllmap.h"
@@ -22,10 +21,8 @@ const unsigned char snow_gfx[256] = {
 char snow_y_off;
 char snow_x_off;
 
-#define ASM_SWAP(val) ({\
-    register unsigned long tmp = val;\
-    asm volatile ("swap %0" : "=d" (tmp) : "0" (tmp));\
-    tmp;})
+// m68k 'swap': exchange the high and low 16-bit halves of a 32-bit word.
+#define ASM_SWAP(val) (((unsigned long)(val) << 16) | ((unsigned long)(val) >> 16))
 
 
 void draw_snow()
@@ -69,8 +66,8 @@ void draw_snow()
 		*dark &= *sprite0++;
 		*dark |= *sprite1++;
 
-		(long)light += 14;
-		(long)dark += 14;
+		light = (void *)((char *)light + (14));
+		dark = (void *)((char *)dark + (14));
 		if((long)sprite0 == (long)(gfx0 + 32)) {
 			sprite0 = gfx0;
 			sprite1 = gfx1;
@@ -150,8 +147,8 @@ void draw_spotlight(short xc, short yc, short r)
   	*addr1++ = ~*addr2; *addr2++ |= 0xffffffff;
   	*addr1++ = ~*addr2; *addr2++ |= 0xffffffff;
 
-  	(char *)addr1 += 6;
-  	(char *)addr2 += 6;
+  	addr1 = (void *)((char *)addr1 + (6));
+  	addr2 = (void *)((char *)addr2 + (6));
   }
 
   x = 0;
@@ -191,8 +188,8 @@ void draw_spotlight(short xc, short yc, short r)
 		*addr1++ = ~*addr2; *addr2++ |= 0xffffffff;
 		*addr1++ = ~*addr2; *addr2++ |= 0xffffffff;
 
-  	(char *)addr1 += 6;
-  	(char *)addr2 += 6;
+  	addr1 = (void *)((char *)addr1 + (6));
+  	addr2 = (void *)((char *)addr2 + (6));
   }
 }
 

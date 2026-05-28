@@ -4,7 +4,6 @@
 #ifndef __DLL_ANIMATION__
 #define __DLL_ANIMATION__
 
-#define __IN_DLL__
 #include "animation.h"
 
 char animation_setup();

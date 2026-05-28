@@ -34,6 +34,7 @@
 //#define SPECIAL_FX_CUTOUT 10
 
 GLOBALS *glbs_base = NULL;
+GLOBALS *glbs = NULL;   // was an a5-pinned register global on m68k
 
 void screen_draw()
 {
@@ -71,7 +72,7 @@ void screen_draw()
 	draw_number(0, 95, glbs->current_fps, glbs->font, 2, glbs->light_buffer, glbs->dark_buffer);
 }
 
-#define BENCHMARK
+// BENCHMARK mode (calc arg-driven FPS test) removed for the native port.
 void _main(void)
 {
 	char screen_save[LCD_SIZE];

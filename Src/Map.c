@@ -191,7 +191,7 @@ void sprite_fill(short col)
 		for(i = 0 ; i < 16 ; i++) {
 			*light = *sprite0++;
 			*dark = *sprite1++;
-			(char *)light += 24; (char *)dark += 24;
+			light = (void *)((char *)light + (24)); dark = (void *)((char *)dark + (24));
 		}
 	}
 }
@@ -249,8 +249,8 @@ void TEST_bg_draw()
 			*light++ = *light_src++; *dark++ = *dark_src++;
 			*light++ = *light_src++; *dark++ = *dark_src++;
 			*light = *light_src; *dark = *dark_src;
-			(char *)light += 14; (char *)dark += 14;
-			(char *)light_src += 8; (char *)dark_src += 8;
+			light = (void *)((char *)light + (14)); dark = (void *)((char *)dark + (14));
+			light_src = (void *)((char *)light_src + (8)); dark_src = (void *)((char *)dark_src + (8));
 			i++; y++;
 		}
 		i = 0; light_src = (long *)(bg_light + 2); dark_src = (long *)(bg_dark + 2);

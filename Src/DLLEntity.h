@@ -4,7 +4,6 @@
 #ifndef __DLL_ENTITY__
 #define __DLL_ENTITY__
 
-#define __IN_DLL__
 #include "entity.h"
 #include "map.h"
 

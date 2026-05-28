@@ -1782,7 +1782,7 @@ void kraid_killed(ENEMY *e)
 	enemy_explode(kraid_body, 0);
 }
 
-char kraid_check_bounds(dir)
+char kraid_check_bounds(char dir)
 {
 	ENEMY_DATA *d = &enemy_data[kraid_body->type];
 	ENTITY *e = &kraid_body->e;

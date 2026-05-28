@@ -1,7 +1,6 @@
 // C Source File
 // Created 12/28/2002; 10:41:55 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>         // Include All Header Files
 #include "stdlib.h"
 #include "dllmap.h"

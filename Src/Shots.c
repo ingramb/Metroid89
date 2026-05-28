@@ -81,7 +81,7 @@ char tsin(short angle)
 	else return -glbs->trig_table[angle - 128];
 }
 
-inline char tcos(short angle)
+char tcos(short angle)
 {
 	return tsin(angle + 64);
 }

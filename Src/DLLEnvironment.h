@@ -4,7 +4,6 @@
 #ifndef __DLL_ENVIRONMENT__
 #define __DLL_ENVIRONMENT__
 
-#define __IN_DLL__
 #include "environment.h"
 #include "player.h"
 

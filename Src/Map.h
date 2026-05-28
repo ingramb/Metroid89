@@ -269,16 +269,16 @@ char game_save();
 char game_load();
 
 #ifndef __IN_DLL__
-#define bg_setup _DLL_call(char, (), BG_SETUP)
-#define bg_reset _DLL_call(void, (), BG_RESET)
-#define bg_cleanup _DLL_call(void, (), BG_CLEANUP)
-#define bg_draw _DLL_call(void, (), BG_DRAW)
-#define draw_map0 _DLL_call(void, (), DRAW_MAP0)
-#define draw_map1 _DLL_call(void, (void * asm("%a2"), void * asm("%a3"), TILE_DATA * asm("%a4"), TILE_NODE * asm("%a0"), TILE_NODE_CLIPPED * asm("%a1")), DRAW_MAP1)
-#define get_data _DLL_call(unsigned char, (short, short), GET_DATA)
-#define get_prop_data _DLL_call(unsigned char, (short, short), GET_PROP_DATA)
-#define set_data _DLL_call(void, (short, short, unsigned char), SET_DATA)
-#define set_prop_data _DLL_call(void, (short, short, unsigned char), SET_PROP_DATA)
+char bg_setup(void);
+void bg_reset(void);
+void bg_cleanup(void);
+void bg_draw(void);
+void draw_map0(void);
+void draw_map1(void *, void *, TILE_DATA *, TILE_NODE *, TILE_NODE_CLIPPED *);
+unsigned char get_data(short, short);
+unsigned char get_prop_data(short, short);
+void set_data(short, short, unsigned char);
+void set_prop_data(short, short, unsigned char);
 //#define tile_list _DLL_glbvar(TILE_NODE *, DLL_TILE_LIST)
 //#define tile_list_clipped _DLL_glbvar(TILE_NODE_CLIPPED *, DLL_TILE_LIST_CLIPPED)
 #endif

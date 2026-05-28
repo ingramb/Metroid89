@@ -9,7 +9,6 @@
 #include <string.h>
 #include "dllexports.h"
 
-#define __IN_DLL__
 #include "map.h"
 #include "tiles.h"
 #include "block.h"

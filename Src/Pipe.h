@@ -67,12 +67,12 @@ typedef struct {
 } PIPE;
 
 #ifndef __IN_DLL__
-#define pipe_init _DLL_call(char, (PIPE_HEADER*, short), PIPE_INIT)
-#define pipe_reset _DLL_call(void, (), PIPE_RESET)
-#define pipe_cleanup _DLL_call(void, (), PIPE_CLEANUP)
-#define pipe_open _DLL_call(void, (PIPE*, short), PIPE_OPEN)
-#define pipe_process _DLL_call(void, (), PIPE_PROCESS)
-#define pipe_draw _DLL_call(void, (), PIPE_DRAW)
+char pipe_init(PIPE_HEADER*, short);
+void pipe_reset(void);
+void pipe_cleanup(void);
+void pipe_open(PIPE*, short);
+void pipe_process(void);
+void pipe_draw(void);
 #endif
 
 #endif

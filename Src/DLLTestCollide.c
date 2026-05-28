@@ -1,7 +1,6 @@
 // C Source File
 // Created 11/19/2002; 12:57:48 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>         // Include All Header Files
 
 char rect_overlap(short x0, short y0, short xdim0, short ydim0, short x1, short y1, short xdim1, short ydim1)
@@ -34,7 +33,7 @@ char rect_diag_overlap(short x0, short y0, short xdim0, short ydim0, short x1, s
 	}
 }
 */
-#define EXT_XCHG(a,b)    asm volatile ("exg %0,%1" : "=d" (a), "=d" (b) : "0" (a), "1" (b) : "cc")
+// EXT_XCHG (m68k 'exg' register swap) now comes from the portable shim header.
 
 char TestCollideX8(short x0, short y0, short w0, short h0, short x1, short y1, short w1, short h1,
 	unsigned char* light0, unsigned char* light1)

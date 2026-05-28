@@ -4,14 +4,13 @@
 #ifndef __DLL_MAP__
 #define __DLL_MAP__
 
-#define __IN_DLL__
 #include "map.h"
 
 void draw_map0();
-void draw_map1(void *light asm("%a2"), void *dark asm("%a3"),
-	TILE_DATA *tile_data asm("%a4"),
-	TILE_NODE *tile_list asm("%a0"),
-	TILE_NODE_CLIPPED *tile_list_clipped asm("%a1"));
+void draw_map1(void *light, void *dark,
+	TILE_DATA *tile_data,
+	TILE_NODE *tile_list,
+	TILE_NODE_CLIPPED *tile_list_clipped);
 unsigned char get_data(short x, short y);
 unsigned char get_prop_data(short x, short y);
 void set_data(short x, short y, unsigned char a);

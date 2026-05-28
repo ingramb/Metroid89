@@ -1,7 +1,6 @@
 // C Source File
 // Created 6/10/2003; 1:27:38 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>         // Include All Header Files
 #include <extgraph.h>
 #include "dllutility.h"
@@ -82,12 +81,12 @@ void draw_title(char *buffer, short y)
 			*light &= *mask; *dark &= *mask++;
 			*light++ |= *sprite0++; *dark++ |= *sprite1++;
 		}
-		(long)light += 10;
-		(long)dark += 10;
+		light = (void *)((char *)light + (10));
+		dark = (void *)((char *)dark + (10));
 	}
 }
 
-void draw_rect(short x, short y, short w, short h, short mode)
+static void draw_rect(short x, short y, short w, short h, short mode)
 {
 	short i;
 

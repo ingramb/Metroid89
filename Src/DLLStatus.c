@@ -1,7 +1,6 @@
 // C Source File
 // Created 5/15/2004; 3:46:22 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>
 #include "dllsystem.h"
 #include "dllutility.h"

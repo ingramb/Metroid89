@@ -241,10 +241,10 @@ void fade(short b, long *light, long *dark, DOOR *door, char draw_player)
 			(*fade_funcs[b])(dst_light++, dst_dark++, light++, dark++);
 			(*fade_funcs[b])(dst_light++, dst_dark++, light++, dark++);
 
-			(char *)light += 6;
-			(char *)dark += 6;
-			(char *)dst_light += 6;
-			(char *)dst_dark += 6;
+			light = (void *)((char *)light + (6));
+			dark = (void *)((char *)dark + (6));
+			dst_light = (void *)((char *)dst_light + (6));
+			dst_dark = (void *)((char *)dst_dark + (6));
 		}
 
 	} else {
@@ -256,10 +256,10 @@ void fade(short b, long *light, long *dark, DOOR *door, char draw_player)
 			(*fade_funcs[b])(dst_light++, dst_dark++, light++, dark++);
 			(*fade_funcs[b])(dst_light++, dst_dark++, light++, dark++);
 
-			(char *)light += 10;
-			(char *)dark += 10;
-			(char *)dst_light += 10;
-			(char *)dst_dark += 10;
+			light = (void *)((char *)light + (10));
+			dark = (void *)((char *)dark + (10));
+			dst_light = (void *)((char *)dst_light + (10));
+			dst_dark = (void *)((char *)dst_dark + (10));
 		}
 	}
 

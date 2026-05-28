@@ -2,7 +2,6 @@
 // Created 7/28/2003; 7:52:02 PM
 
 #include <tigcclib.h>         // Include All Header Files
-#define __IN_DLL__
 #include "utility.h"
 #include "dllpipe.h"
 #include "shots.h"

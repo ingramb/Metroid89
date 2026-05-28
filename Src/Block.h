@@ -19,16 +19,16 @@ typedef struct {
 #define BLOCK_SQUISH (-1)
 
 #ifndef __IN_DLL__
-#define block_setup _DLL_call(char, (), BLOCK_SETUP)
-#define block_reset _DLL_call(void, (), BLOCK_RESET)
-#define block_cleanup _DLL_call(void, (), BLOCK_CLEANUP)
-#define block_create _DLL_call(short, (short, short, short, short), BLOCK_CREATE)
-#define block_stretch_vert _DLL_call(void, (short, short, short), BLOCK_STRETCH_VERT)
-#define block_stretch_horiz _DLL_call(void, (short, short, short), BLOCK_STRETCH_HORIZ)
-#define block_move _DLL_call(void, (short, short, short), BLOCK_MOVE)
-#define block_delete _DLL_call(void, (short), BLOCK_DELETE)
-#define block_test _DLL_call(char, (short, short, short, short, short, short), BLOCK_TEST)
-#define block_check _DLL_call(char, (short, short, short, short, short), BLOCK_CHECK)
+char block_setup(void);
+void block_reset(void);
+void block_cleanup(void);
+short block_create(short, short, short, short);
+void block_stretch_vert(short, short, short);
+void block_stretch_horiz(short, short, short);
+void block_move(short, short, short);
+void block_delete(short);
+char block_test(short, short, short, short, short, short);
+char block_check(short, short, short, short, short);
 #endif
 
 #endif

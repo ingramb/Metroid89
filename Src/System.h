@@ -24,17 +24,17 @@ typedef struct {
 #define BUTTON_ON 1
 #define BUTTON_DISABLE 2
 
-#define string_width _DLL_call(short, (char *), STRING_WIDTH)
-#define draw_string _DLL_call(void, (short, short, const char *, unsigned char *, short), DRAW_STRING)
-#define draw_string_ex _DLL_call(void, (short, short, const char *, unsigned char *, short, void *, void *), DRAW_STRING_EX)
-#define message _DLL_call(void, (char *, unsigned char *, short), MESSAGE)
-#define draw_border _DLL_call(void, (short, short, short, short, char), DRAW_BORDER)
+short string_width(char *);
+void draw_string(short, short, const char *, unsigned char *, short);
+void draw_string_ex(short, short, const char *, unsigned char *, short, void *, void *);
+void message(char *, unsigned char *, short);
+void draw_border(short, short, short, short, char);
 
-#define menu_create _DLL_call(MENU *, (short), MENU_CREATE)
-#define menu_add_choice _DLL_call(void, (MENU *, short, short, char, char *), MENU_ADD_CHOICE)
-#define menu_process _DLL_call(long, (MENU *, unsigned char *), MENU_PROCESS)
+MENU * menu_create(short);
+void menu_add_choice(MENU *, short, short, char, char *);
+long menu_process(MENU *, unsigned char *);
 
-#define title_screen _DLL_call(char, (char *, void *, void *), TITLE_SCREEN)
+char title_screen(char *, void *, void *);
 
 
 

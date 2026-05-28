@@ -64,22 +64,22 @@ typedef struct {
 } ENTITY;
 
 #ifndef __IN_DLL__
-#define hit_slope_up _DLL_glbvar(char, HIT_SLOPE_UP)
-#define hit_slope_down _DLL_glbvar(char, HIT_SLOPE_DOWN)
-#define hit_solid _DLL_glbvar(char, HIT_SOLID)
-#define entity_init _DLL_call(void, (ENTITY *, short, short, ENTITY_SIZE *, char), ENTITY_INIT)
-#define entity_set_pos _DLL_call(void, (ENTITY *, short, short), ENTITY_SET_POS)
-#define entity_check_size _DLL_call(char ,(ENTITY *, ENTITY_SIZE *), ENTITY_CHECK_SIZE)
-#define entity_set_size _DLL_call(void ,(ENTITY *, ENTITY_SIZE *), ENTITY_SET_SIZE)
-#define entity_set_gravity _DLL_call(void ,(ENTITY *, char), ENTITY_SET_GRAVITY)
-#define entity_reset_slope _DLL_call(void ,(ENTITY *), ENTITY_RESET_SLOPE)
-#define entity_gravity_rotate_right _DLL_call(void ,(ENTITY *), ENTITY_GRAVITY_ROTATE_RIGHT)
-#define entity_gravity_rotate_left _DLL_call(void ,(ENTITY *), ENTITY_GRAVITY_ROTATE_LEFT)
-#define entity_check_direction _DLL_call(char ,(ENTITY *, char), ENTITY_CHECK_DIRECTION)
-#define entity_move_internal _DLL_call(char ,(ENTITY *, char, char, short), ENTITY_MOVE_INTERNAL)
-#define entity_move_simple _DLL_call(char ,(ENTITY *, char, char, short), ENTITY_MOVE_SIMPLE)
-#define entity_move _DLL_call(char ,(ENTITY *, char, short), ENTITY_MOVE)
-#define entity_draw _DLL_call(void ,(ENTITY *, unsigned char *, char, char, char), ENTITY_DRAW)
+extern char hit_slope_up;
+extern char hit_slope_down;
+extern char hit_solid;
+void entity_init(ENTITY *, short, short, ENTITY_SIZE *, char);
+void entity_set_pos(ENTITY *, short, short);
+char entity_check_size(ENTITY *, ENTITY_SIZE *);
+void entity_set_size(ENTITY *, ENTITY_SIZE *);
+void entity_set_gravity(ENTITY *, char);
+void entity_reset_slope(ENTITY *);
+void entity_gravity_rotate_right(ENTITY *);
+void entity_gravity_rotate_left(ENTITY *);
+char entity_check_direction(ENTITY *, char);
+char entity_move_internal(ENTITY *, char, char, short);
+char entity_move_simple(ENTITY *, char, char, short);
+char entity_move(ENTITY *, char, short);
+void entity_draw(ENTITY *, unsigned char *, char, char, char);
 #endif
 
 #endif

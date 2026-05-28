@@ -3,7 +3,6 @@
 
 //#define OPTIMIZE_ROM_CALLS    // Use ROM Call Optimization
 
-#define __IN_DLL__
 #include <tigcclib.h>         // Include All Header Files
 #include "dllblock.h"
 #include "dlltestcollide.h"

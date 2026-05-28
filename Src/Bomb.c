@@ -27,10 +27,8 @@
 
 char bombs_placed;
 
-#define ASM_SWAP(val) ({\
-    register unsigned long tmp = val;\
-    asm volatile ("swap %0" : "=d" (tmp) : "0" (tmp));\
-    tmp;})
+// m68k 'swap': exchange the high and low 16-bit halves of a 32-bit word.
+#define ASM_SWAP(val) (((unsigned long)(val) << 16) | ((unsigned long)(val) >> 16))
 
 void DrawBombStrip(short x1, short x2, short y) {
     static const unsigned short table1[16] = {0xffff,0x7fff,0x3fff,0x1fff,

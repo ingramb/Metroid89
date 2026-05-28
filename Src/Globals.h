@@ -114,7 +114,7 @@ typedef struct {
 	char *atan_table;
 } GLOBALS;
 
-register GLOBALS *glbs asm("a5");
+extern GLOBALS *glbs;
 extern GLOBALS *glbs_base;
 
 #endif

@@ -35,9 +35,9 @@ typedef struct {
 
 #ifndef __IN_DLL__
 
-#define environment_setup _DLL_call(void, (char, char, short, short, short), ENVIRONMENT_SETUP)
-#define environment_process _DLL_call(void, (), ENVIRONMENT_PROCESS)
-#define environment_draw _DLL_call(void, (unsigned char *), ENVIRONMENT_DRAW)
+void environment_setup(char, char, short, short, short);
+void environment_process(void);
+void environment_draw(unsigned char *);
 #endif
 
 #endif

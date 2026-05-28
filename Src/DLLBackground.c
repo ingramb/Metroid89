@@ -1,7 +1,6 @@
 // C Source File
 // Created 2/11/2004; 8:32:50 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>         // Include All Header Files
 #include "stdlib.h"
 #include "dllmap.h"
@@ -23,33 +22,35 @@ const char ripple_table[16 * 8] = {
 	1, 1, 0, 1, 0, 1, 2, 1, 2, 1, 0, 1, 0, 1, 2, 1, /*1, 1, 0, 1, 0, 1, 2, 1, 2, 1, 0, 1, 0, 1, 2, 1,*/
 };
 
+// Each "line" is 12 consecutive 16-bit words treated as one 192-bit value
+// (word[0] most significant = leftmost pixels). The original m68k used a
+// chained lsl/roxl (resp. lsr/roxr) sequence to shift that value by one bit.
 void scroll_left(unsigned short* buffer,unsigned short lines) {
-    register short* tmpbuffer = buffer;
-    register short  tmplines  = lines;
-
-    tmpbuffer += (tmplines<<3) + (tmplines<<2);
-    tmplines--;
-
-    asm volatile ("0:\n"
-        "lsl.w  -(%0);roxl.w -(%0);roxl.w -(%0);roxl.w -(%0);roxl.w -(%0);roxl.w -(%0)\n"
-        "roxl.w -(%0);roxl.w -(%0);roxl.w -(%0);roxl.w -(%0);roxl.w -(%0);roxl.w -(%0)\n"
-        "dbf %1,0b"
-        : "=a" (tmpbuffer), "=d" (tmplines)
-        : "0"  (tmpbuffer), "1"  (tmplines));
+    unsigned short l;
+    for (l = 0; l < lines; l++) {
+        unsigned short *w = buffer + l * 12;
+        unsigned int carry = 0;
+        int i;
+        for (i = 11; i >= 0; i--) {
+            unsigned int c = (w[i] >> 15) & 1;
+            w[i] = (unsigned short)((w[i] << 1) | carry);
+            carry = c;
+        }
+    }
 }
 
 void scroll_right(unsigned short* buffer,unsigned short lines) {
-    register short* tmpbuffer = buffer;
-    register short  tmplines  = lines;
-
-    tmplines--;
-
-    asm volatile ("0:\n"
-        "lsr.w  (%0)+;roxr.w (%0)+;roxr.w (%0)+;roxr.w (%0)+;roxr.w (%0)+;roxr.w (%0)+\n"
-        "roxr.w (%0)+;roxr.w (%0)+;roxr.w (%0)+;roxr.w (%0)+;roxr.w (%0)+;roxr.w (%0)+\n"
-        "dbf %1,0b"
-        : "=a" (tmpbuffer), "=d" (tmplines)
-        : "0"  (tmpbuffer), "1"  (tmplines));
+    unsigned short l;
+    for (l = 0; l < lines; l++) {
+        unsigned short *w = buffer + l * 12;
+        unsigned int carry = 0;
+        int i;
+        for (i = 0; i < 12; i++) {
+            unsigned int c = w[i] & 1;
+            w[i] = (unsigned short)((w[i] >> 1) | (carry << 15));
+            carry = c;
+        }
+    }
 }
 
 void sprite_fill(short col)
@@ -72,7 +73,7 @@ void sprite_fill(short col)
 		for(i = 0 ; i < 16 ; i++) {
 			*light = *sprite0++;
 			*dark = *sprite1++;
-			(char *)light += 24; (char *)dark += 24;
+			light = (void *)((char *)light + (24)); dark = (void *)((char *)dark + (24));
 		}
 	}
 }
@@ -95,7 +96,7 @@ void draw_footer()
 			for(i = 0 ; i < 16 ; i++) {
 				*light = *sprite0++;
 				*dark = *sprite1++;
-				(char *)light += 20; (char *)dark += 20;
+				light = (void *)((char *)light + (20)); dark = (void *)((char *)dark + (20));
 			}
 		}
 	}
@@ -198,7 +199,7 @@ void bg_draw()
 		table_ptr = (char *)ripple_table + glbs->camera.bg_ripple * 16; h = 0;
 		while(y < hieght) {
 			while(y < hieght) {
-				(char *)light_src += 24 * table_ptr[h]; (char *)dark_src += 24 * table_ptr[h];
+				light_src = (void *)((char *)light_src + (24 * table_ptr[h])); dark_src = (void *)((char *)dark_src + (24 * table_ptr[h]));
 				i += table_ptr[h];  h = (h + 1) & 15;
 				if(i >= bg->hieght * 16) break;
 				
@@ -207,7 +208,7 @@ void bg_draw()
 				*light++ = *(light_src+2); *dark++ = *(dark_src+2);
 				*light++ = *(light_src+3); *dark++ = *(dark_src+3);
 				*light = *(light_src+4); *dark = *(dark_src+4);
-				(char *)light += 14; (char *)dark += 14;
+				light = (void *)((char *)light + (14)); dark = (void *)((char *)dark + (14));
 				y++;
 			}
 			if(y < hieght) {
@@ -226,8 +227,8 @@ void bg_draw()
 			*light++ = *light_src++; *dark++ = *dark_src++;
 			*light++ = *light_src++; *dark++ = *dark_src++;
 			*light = *light_src; *dark = *dark_src;
-			(char *)light += 14; (char *)dark += 14;
-			(char *)light_src += 8; (char *)dark_src += 8;
+			light = (void *)((char *)light + (14)); dark = (void *)((char *)dark + (14));
+			light_src = (void *)((char *)light_src + (8)); dark_src = (void *)((char *)dark_src + (8));
 			i++; y++;
 		}
 		if(y < hieght) {
@@ -243,7 +244,7 @@ void bg_draw()
 			*light++ = *light_src++; *dark++ = *dark_src++;
 			*light++ = *light_src++; *dark++ = *dark_src++;
 			*light = *light_src++; *dark = *dark_src++;
-			(char *)light += 14; (char *)dark += 14;
+			light = (void *)((char *)light + (14)); dark = (void *)((char *)dark + (14));
 			y++;
 		}
 	} else if(water_level < 100) {
@@ -264,8 +265,8 @@ void bg_draw()
 				*++dark = (*dark_src++) << cnt0; *((unsigned short *)dark + 1) |= *(unsigned short *)dark_src >> cnt1;
 				*++dark = (*dark_src++) << cnt0; *((unsigned short *)dark + 1) |= *(unsigned short *)dark_src >> cnt1;
 
-				(char *)light += 14; (char *)dark += 14;
-				(char *)light_src += 4; (char *)dark_src += 4;
+				light = (void *)((char *)light + (14)); dark = (void *)((char *)dark + (14));
+				light_src = (void *)((char *)light_src + (4)); dark_src = (void *)((char *)dark_src + (4));
 				i++; y++; s = (s + 1) & 15;
 			}
 			i = 0; light_src = (long *)(glbs->bg_light + 2); dark_src = (long *)(glbs->bg_dark + 2);

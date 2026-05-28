@@ -1,7 +1,6 @@
 // C Source File
 // Created 2/1/2003; 1:18:01 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>         // Include All Header Files
 #include "dllutility.h"
 #include "globals.h"

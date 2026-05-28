@@ -4,7 +4,6 @@
 #ifndef __DLL_PIPE__
 #define __DLL_PIPE__
 
-#define __IN_DLL__
 #include "pipe.h"
 
 char pipe_init(PIPE_HEADER *header, short number);

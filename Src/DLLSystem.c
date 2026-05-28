@@ -1,7 +1,6 @@
 // C Source File
 // Created 11/14/2002; 5:05:00 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>         // Include All Header Files
 #include <extgraph.h>
 #include "dllsystem.h"
@@ -166,7 +165,7 @@ void message(char *txt, char *font, short hieght)
 				line++;
 			}
 		}
-		update_screen(FALSE);
+		update_screen();
 		delay(15);
 	}
 

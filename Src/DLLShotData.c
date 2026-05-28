@@ -1,7 +1,6 @@
 // C Source File
 // Created 3/13/2003; 6:00:34 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>
 #include "shots.h"
 #include "utility.h"

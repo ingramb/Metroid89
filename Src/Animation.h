@@ -63,13 +63,13 @@ typedef struct {
 } ANIMATION_DATA;
 
 #ifndef __IN_DLL__
-#define animation_setup _DLL_call(char, (), ANIMATION_SETUP)
-#define animation_reset _DLL_call(void, (), ANIMATION_RESET)
-#define animation_cleanup _DLL_call(char, (), ANIMATION_CLEANUP)
-#define animation_create _DLL_call(short, (short, short, short, short), ANIMATION_CREATE)
-#define animation_delete _DLL_call(void, (short), ANIMATION_DELETE)
-#define animation_process _DLL_call(void, (), ANIMATION_PROCESS)
-#define animation_draw _DLL_call(void, (SPRITE_HEADER *, unsigned char *, ENEMY *), ANIMATION_DRAW)
+char animation_setup(void);
+void animation_reset(void);
+void animation_cleanup(void);
+short animation_create(short, short, short, short);
+void animation_delete(short);
+void animation_process(void);
+void animation_draw(SPRITE_HEADER *, unsigned char *, ENEMY *);
 #endif
 
 #endif

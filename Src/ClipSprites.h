@@ -6,18 +6,18 @@
 
 #include "dllexports.h"
 //char rect_diag_overlap(short x0, short y0, short xdim0, short ydim0, short x1, short y1, short d1, short h1, char direction);
-#define GraySpriteClip8_OR _DLL_call(void, (short, short, short, unsigned char*), GRAYSPRITECLIP8_OR)
-#define GraySpriteClip8_MASK _DLL_call(void, (short asm("%d0"), short asm("%d1"), short asm("%d2"), unsigned char* asm("%a0"), void* asm("%a1"), void* asm("%a2")), GRAYSPRITECLIP8_MASK)
-#define GraySpriteClip16_MASK _DLL_call(void, (short asm("%d0"), short asm("%d1"), short asm("%d2"), unsigned short* asm("%a0"), void* asm("%a1"), void* asm("%a2")), GRAYSPRITECLIP16_MASK)
-#define GraySpriteClip32_MASK _DLL_call(void, (short asm("%d0"), short asm("%d1"), short asm("%d2"), unsigned long* asm("%a0"), void* asm("%a1"), void* asm("%a2")), GRAYSPRITECLIP32_MASK)
+void GraySpriteClip8_OR(short, short, short, unsigned char*);
+void GraySpriteClip8_MASK(short, short, short, unsigned char*, void*, void*);
+void GraySpriteClip16_MASK(short, short, short, unsigned short*, void*, void*);
+void GraySpriteClip32_MASK(short, short, short, unsigned long*, void*, void*);
 
-#define GraySpriteClipX8_MASK _DLL_call(void, (short, short, short, unsigned char*, short, char), GRAYSPRITECLIPX8_MASK)
-#define GraySpriteClipX8_WMASK _DLL_call(void, (short, short, short, unsigned char*, short, char), GRAYSPRITECLIPX8_WMASK)
-#define GraySpriteClipVFlipX8_MASK _DLL_call(void, (short, short, short, unsigned char*, short, char), GRAYSPRITECLIPVFLIPX8_MASK)
+void GraySpriteClipX8_MASK(short, short, short, unsigned char*, short, char);
+void GraySpriteClipX8_WMASK(short, short, short, unsigned char*, short, char);
+void GraySpriteClipVFlipX8_MASK(short, short, short, unsigned char*, short, char);
 
-#define rect_overlap _DLL_call(char, (short, short, short, short, short, short, short, short), RECT_OVERLAP)
-#define rect_diag_overlap _DLL_call(char, (short, short, short, short, short, short, short, short, char), RECT_DIAG_OVERLAP)
-#define TestCollideX8 _DLL_call(char, (short, short, short, short, short, short, short, short, unsigned char*, unsigned char *), TEST_COLLIDE_X8)
+char rect_overlap(short, short, short, short, short, short, short, short);
+char rect_diag_overlap(short, short, short, short, short, short, short, short, char);
+char TestCollideX8(short, short, short, short, short, short, short, short, unsigned char*, unsigned char *);
 
 
 #endif

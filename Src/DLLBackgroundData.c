@@ -1,7 +1,6 @@
 // C Source File
 // Created 4/9/2003; 6:58:05 PM
 
-#define __IN_DLL__
 #include <tigcclib.h>
 #include "map.h"
 
