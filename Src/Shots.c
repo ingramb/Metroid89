@@ -614,7 +614,7 @@ void shots_process()
 				if(glbs->shots[i].enemy_hit & (1 << active_enemies[a])) continue;
 
 				e = &get_enemy(a)->e;
-				if(TestCollideX8(sx, sy, sw, sh,
+				if(e->sprite && TestCollideX8(sx, sy, sw, sh,
 					e->x + e->sprite->x_offset, e->y + e->sprite->y_offset,
 					e->sprite->width, e->sprite->hieght,
 					glbs->shot_gfx + glbs->shots[i].header->offset, enemy_gfx[get_enemy(a)->type].gfx + e->sprite->offset)) {

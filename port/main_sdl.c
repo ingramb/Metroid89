@@ -139,11 +139,11 @@ int platform_should_quit(void) { return g_should_quit; }
 extern void platform_timer_tick(void);
 
 // Game-clock frequency. The calculator drove logic off its programmable timer
-// (~100 Hz here); tunable via METROID89_HZ.
+// (~80 Hz here); tunable via METROID89_HZ.
 int platform_hz(void)
 {
     const char *e = getenv("METROID89_HZ");
-    int hz = e ? atoi(e) : 100;
+    int hz = e ? atoi(e) : 80;
     if (hz < 20)  hz = 20;
     if (hz > 500) hz = 500;
     return hz;
