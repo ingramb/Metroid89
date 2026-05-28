@@ -359,7 +359,19 @@ void enemy_init(ENEMY_HEADER *header, short number)
 
 			decompress(gfx_ptr, enemy_gfx[i].gfx);
 
-			enemy_gfx[i].frame_number = *(short *)(HeapDeref(enemy_gfx[i].buffer));
+			// The enemy gfx archive is big-endian (built by the Windows SpriteMaker):
+			// byte-swap the frame count and each SPRITE_HEADER.offset to host order
+			// before the (host-native) flip-frame generation below uses them.
+			{
+				unsigned short fn = *(unsigned short *)(HeapDeref(enemy_gfx[i].buffer));
+				short f;
+				fn = (unsigned short)((fn >> 8) | (fn << 8));
+				enemy_gfx[i].frame_number = fn;
+				for(f = 0 ; f < (short)fn ; f++) {
+					unsigned short o = enemy_gfx[i].header[f].offset;
+					enemy_gfx[i].header[f].offset = (unsigned short)((o >> 8) | (o << 8));
+				}
+			}
 
 			if(enemy_data[i].extra_frame_skip != NO_EXTRA_FRAMES) {
 
