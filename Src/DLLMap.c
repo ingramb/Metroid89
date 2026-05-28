@@ -9,6 +9,8 @@
 #include "dllenvironment.h"
 #include "globals.h"
 #include "bitops.h"
+// 32-bit funnel: (A<<cnt)|(B>>cnt2) with cnt+cnt2==32, UB-safe for cnt==0.
+#define BGFUNNEL(a,b) ((uint32_t)((((unsigned long long)(uint32_t)(a) << 32) | (uint32_t)(b)) >> cnt2))
 #include <stdint.h>
 
 //TILE_NODE_CLIPPED *tile_list_clipped = NULL;
@@ -84,20 +86,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 		for(i = 0, h = glbs->camera.bg_y_off ; h < 32 && i < water_level ; i++, h++) {
 			sprite += table_ptr[h];
 
-			ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
-			ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
+			ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[loc]), LD32(sprite + map[loc + 1]))));
+			ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[loc] + 32), LD32(sprite + map[loc + 1] + 32))));
 
-			ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
-			ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
+			ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[loc + 1]), LD32(sprite + map[loc + 2]))));
+			ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[loc + 1] + 32), LD32(sprite + map[loc + 2] + 32))));
 
-			ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
-			ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
+			ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[loc + 2]), LD32(sprite + map[loc + 3]))));
+			ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[loc + 2] + 32), LD32(sprite + map[loc + 3] + 32))));
 
-			ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
-			ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
+			ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[loc + 3]), LD32(sprite + map[loc + 4]))));
+			ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[loc + 3] + 32), LD32(sprite + map[loc + 4] + 32))));
 
-			ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
-			ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
+			ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[loc + 4]), LD32(sprite + map[loc + 5]))));
+			ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[loc + 4] + 32), LD32(sprite + map[loc + 5] + 32))));
 
 			light += 30;
 			dark += 30;
@@ -110,20 +112,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			for(h = 0 ; h < 32 && i < hieght; h++, i++) {
 				sprite += table_ptr[h];
 
-				ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
-				ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
+				ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[loc]), LD32(sprite + map[loc + 1]))));
+				ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[loc] + 32), LD32(sprite + map[loc + 1] + 32))));
 
-				ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
-				ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
+				ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[loc + 1]), LD32(sprite + map[loc + 2]))));
+				ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[loc + 1] + 32), LD32(sprite + map[loc + 2] + 32))));
 
-				ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
-				ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
+				ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[loc + 2]), LD32(sprite + map[loc + 3]))));
+				ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[loc + 2] + 32), LD32(sprite + map[loc + 3] + 32))));
 
-				ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
-				ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
+				ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[loc + 3]), LD32(sprite + map[loc + 4]))));
+				ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[loc + 3] + 32), LD32(sprite + map[loc + 4] + 32))));
 
-				ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
-				ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
+				ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[loc + 4]), LD32(sprite + map[loc + 5]))));
+				ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[loc + 4] + 32), LD32(sprite + map[loc + 5] + 32))));
 
 				light += 30;
 				dark += 30;
@@ -137,20 +139,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 	s = (glbs->camera.bg_wave + water_level) & 15;
 
 	for(i = 0, h = glbs->camera.bg_y_off ; h < 32 && i < water_level ; i++, h++) {
-		ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
-		ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
+		ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[loc]), LD32(sprite + map[loc + 1]))));
+		ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[loc] + 32), LD32(sprite + map[loc + 1] + 32))));
 
-		ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
-		ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
+		ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[loc + 1]), LD32(sprite + map[loc + 2]))));
+		ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[loc + 1] + 32), LD32(sprite + map[loc + 2] + 32))));
 
-		ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
-		ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
+		ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[loc + 2]), LD32(sprite + map[loc + 3]))));
+		ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[loc + 2] + 32), LD32(sprite + map[loc + 3] + 32))));
 
-		ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
-		ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
+		ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[loc + 3]), LD32(sprite + map[loc + 4]))));
+		ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[loc + 3] + 32), LD32(sprite + map[loc + 4] + 32))));
 
-		ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
-		ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
+		ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[loc + 4]), LD32(sprite + map[loc + 5]))));
+		ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[loc + 4] + 32), LD32(sprite + map[loc + 5] + 32))));
 
 		light += 30;
 		dark += 30;
@@ -162,20 +164,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 		loc += 8;
 
 		for(h = 0 ; h < 32 && i < water_level && i < hieght; h++, i++) {
-			ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
-			ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
+			ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[loc]), LD32(sprite + map[loc + 1]))));
+			ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[loc] + 32), LD32(sprite + map[loc + 1] + 32))));
 
-			ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
-			ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
+			ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[loc + 1]), LD32(sprite + map[loc + 2]))));
+			ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[loc + 1] + 32), LD32(sprite + map[loc + 2] + 32))));
 
-			ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
-			ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
+			ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[loc + 2]), LD32(sprite + map[loc + 3]))));
+			ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[loc + 2] + 32), LD32(sprite + map[loc + 3] + 32))));
 
-			ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
-			ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
+			ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[loc + 3]), LD32(sprite + map[loc + 4]))));
+			ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[loc + 3] + 32), LD32(sprite + map[loc + 4] + 32))));
 
-			ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
-			ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
+			ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[loc + 4]), LD32(sprite + map[loc + 5]))));
+			ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[loc + 4] + 32), LD32(sprite + map[loc + 5] + 32))));
 
 			light += 30;
 			dark += 30;
@@ -190,20 +192,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			else l = loc;
 			cnt2 = 32 - cnt;
 
-			ST32((void*)(light), ((LD32(sprite + map[l]) << cnt) | (LD32(sprite + map[l + 1]) >> cnt2)));
-			ST32((void*)(dark), ((LD32(sprite + map[l] + 32) << cnt) | (LD32(sprite + map[l + 1] + 32) >> cnt2)));
+			ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[l]), LD32(sprite + map[l + 1]))));
+			ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[l] + 32), LD32(sprite + map[l + 1] + 32))));
 
-			ST32((void*)(light + 4), ((LD32(sprite + map[l + 1]) << cnt) | (LD32(sprite + map[l + 2]) >> cnt2)));
-			ST32((void*)(dark + 4), ((LD32(sprite + map[l + 1] + 32) << cnt) | (LD32(sprite + map[l + 2] + 32) >> cnt2)));
+			ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[l + 1]), LD32(sprite + map[l + 2]))));
+			ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[l + 1] + 32), LD32(sprite + map[l + 2] + 32))));
 
-			ST32((void*)(light + 8), ((LD32(sprite + map[l + 2]) << cnt) | (LD32(sprite + map[l + 3]) >> cnt2)));
-			ST32((void*)(dark + 8), ((LD32(sprite + map[l + 2] + 32) << cnt) | (LD32(sprite + map[l + 3] + 32) >> cnt2)));
+			ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[l + 2]), LD32(sprite + map[l + 3]))));
+			ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[l + 2] + 32), LD32(sprite + map[l + 3] + 32))));
 
-			ST32((void*)(light + 12), ((LD32(sprite + map[l + 3]) << cnt) | (LD32(sprite + map[l + 4]) >> cnt2)));
-			ST32((void*)(dark + 12), ((LD32(sprite + map[l + 3] + 32) << cnt) | (LD32(sprite + map[l + 4] + 32) >> cnt2)));
+			ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[l + 3]), LD32(sprite + map[l + 4]))));
+			ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[l + 3] + 32), LD32(sprite + map[l + 4] + 32))));
 
-			ST32((void*)(light + 16), ((LD32(sprite + map[l + 4]) << cnt) | (LD32(sprite + map[l + 5]) >> cnt2)));
-			ST32((void*)(dark + 16), ((LD32(sprite + map[l + 4] + 32) << cnt) | (LD32(sprite + map[l + 5] + 32) >> cnt2)));
+			ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[l + 4]), LD32(sprite + map[l + 5]))));
+			ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[l + 4] + 32), LD32(sprite + map[l + 5] + 32))));
 
 			light += 30;
 			dark += 30;
@@ -222,20 +224,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			else l = loc;
 			cnt2 = 32 - cnt;
 
-			ST32((void*)(light), ((LD32(sprite + map[l]) << cnt) | (LD32(sprite + map[l + 1]) >> cnt2)));
-			ST32((void*)(dark), ((LD32(sprite + map[l] + 32) << cnt) | (LD32(sprite + map[l + 1] + 32) >> cnt2)));
+			ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[l]), LD32(sprite + map[l + 1]))));
+			ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[l] + 32), LD32(sprite + map[l + 1] + 32))));
 
-			ST32((void*)(light + 4), ((LD32(sprite + map[l + 1]) << cnt) | (LD32(sprite + map[l + 2]) >> cnt2)));
-			ST32((void*)(dark + 4), ((LD32(sprite + map[l + 1] + 32) << cnt) | (LD32(sprite + map[l + 2] + 32) >> cnt2)));
+			ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[l + 1]), LD32(sprite + map[l + 2]))));
+			ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[l + 1] + 32), LD32(sprite + map[l + 2] + 32))));
 
-			ST32((void*)(light + 8), ((LD32(sprite + map[l + 2]) << cnt) | (LD32(sprite + map[l + 3]) >> cnt2)));
-			ST32((void*)(dark + 8), ((LD32(sprite + map[l + 2] + 32) << cnt) | (LD32(sprite + map[l + 3] + 32) >> cnt2)));
+			ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[l + 2]), LD32(sprite + map[l + 3]))));
+			ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[l + 2] + 32), LD32(sprite + map[l + 3] + 32))));
 
-			ST32((void*)(light + 12), ((LD32(sprite + map[l + 3]) << cnt) | (LD32(sprite + map[l + 4]) >> cnt2)));
-			ST32((void*)(dark + 12), ((LD32(sprite + map[l + 3] + 32) << cnt) | (LD32(sprite + map[l + 4] + 32) >> cnt2)));
+			ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[l + 3]), LD32(sprite + map[l + 4]))));
+			ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[l + 3] + 32), LD32(sprite + map[l + 4] + 32))));
 
-			ST32((void*)(light + 16), ((LD32(sprite + map[l + 4]) << cnt) | (LD32(sprite + map[l + 5]) >> cnt2)));
-			ST32((void*)(dark + 16), ((LD32(sprite + map[l + 4] + 32) << cnt) | (LD32(sprite + map[l + 5] + 32) >> cnt2)));
+			ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[l + 4]), LD32(sprite + map[l + 5]))));
+			ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[l + 4] + 32), LD32(sprite + map[l + 5] + 32))));
 
 			light += 30;
 			dark += 30;
@@ -385,20 +387,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 		for(i = 0, h = glbs->camera.bg_y_off ; h < 32 && i < water_level ; i++, h++) {
 			sprite += table_ptr[h];
 
-			ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
-			ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
+			ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[loc]), LD32(sprite + map[loc + 1]))));
+			ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[loc] + 32), LD32(sprite + map[loc + 1] + 32))));
 
-			ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
-			ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
+			ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[loc + 1]), LD32(sprite + map[loc + 2]))));
+			ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[loc + 1] + 32), LD32(sprite + map[loc + 2] + 32))));
 
-			ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
-			ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
+			ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[loc + 2]), LD32(sprite + map[loc + 3]))));
+			ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[loc + 2] + 32), LD32(sprite + map[loc + 3] + 32))));
 
-			ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
-			ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
+			ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[loc + 3]), LD32(sprite + map[loc + 4]))));
+			ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[loc + 3] + 32), LD32(sprite + map[loc + 4] + 32))));
 
-			ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
-			ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
+			ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[loc + 4]), LD32(sprite + map[loc + 5]))));
+			ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[loc + 4] + 32), LD32(sprite + map[loc + 5] + 32))));
 
 			light += 30;
 			dark += 30;
@@ -411,20 +413,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			for(h = 0 ; h < 32 && i < hieght; h++, i++) {
 				sprite += table_ptr[h];
 
-				ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
-				ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
+				ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[loc]), LD32(sprite + map[loc + 1]))));
+				ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[loc] + 32), LD32(sprite + map[loc + 1] + 32))));
 
-				ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
-				ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
+				ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[loc + 1]), LD32(sprite + map[loc + 2]))));
+				ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[loc + 1] + 32), LD32(sprite + map[loc + 2] + 32))));
 
-				ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
-				ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
+				ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[loc + 2]), LD32(sprite + map[loc + 3]))));
+				ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[loc + 2] + 32), LD32(sprite + map[loc + 3] + 32))));
 
-				ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
-				ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
+				ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[loc + 3]), LD32(sprite + map[loc + 4]))));
+				ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[loc + 3] + 32), LD32(sprite + map[loc + 4] + 32))));
 
-				ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
-				ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
+				ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[loc + 4]), LD32(sprite + map[loc + 5]))));
+				ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[loc + 4] + 32), LD32(sprite + map[loc + 5] + 32))));
 
 				light += 30;
 				dark += 30;
@@ -435,20 +437,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 	}
 
 	for(; h < 32 && i <= water_level;) {
-		ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
-		ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
+		ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[loc]), LD32(sprite + map[loc + 1]))));
+		ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[loc] + 32), LD32(sprite + map[loc + 1] + 32))));
 
-		ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
-		ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
+		ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[loc + 1]), LD32(sprite + map[loc + 2]))));
+		ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[loc + 1] + 32), LD32(sprite + map[loc + 2] + 32))));
 
-		ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
-		ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
+		ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[loc + 2]), LD32(sprite + map[loc + 3]))));
+		ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[loc + 2] + 32), LD32(sprite + map[loc + 3] + 32))));
 
-		ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
-		ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
+		ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[loc + 3]), LD32(sprite + map[loc + 4]))));
+		ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[loc + 3] + 32), LD32(sprite + map[loc + 4] + 32))));
 
-		ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
-		ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
+		ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[loc + 4]), LD32(sprite + map[loc + 5]))));
+		ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[loc + 4] + 32), LD32(sprite + map[loc + 5] + 32))));
 
 		if(next_line[i] == 1) {
 			i++; h++;
@@ -467,20 +469,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 		loc += 8;
 
 		for(; h < 32 && i <= water_level && i <= hieght;) {
-			ST32((void*)(light), ((LD32(sprite + map[loc]) << cnt) | (LD32(sprite + map[loc + 1]) >> cnt2)));
-			ST32((void*)(dark), ((LD32(sprite + map[loc] + 32) << cnt) | (LD32(sprite + map[loc + 1] + 32) >> cnt2)));
+			ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[loc]), LD32(sprite + map[loc + 1]))));
+			ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[loc] + 32), LD32(sprite + map[loc + 1] + 32))));
 
-			ST32((void*)(light + 4), ((LD32(sprite + map[loc + 1]) << cnt) | (LD32(sprite + map[loc + 2]) >> cnt2)));
-			ST32((void*)(dark + 4), ((LD32(sprite + map[loc + 1] + 32) << cnt) | (LD32(sprite + map[loc + 2] + 32) >> cnt2)));
+			ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[loc + 1]), LD32(sprite + map[loc + 2]))));
+			ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[loc + 1] + 32), LD32(sprite + map[loc + 2] + 32))));
 
-			ST32((void*)(light + 8), ((LD32(sprite + map[loc + 2]) << cnt) | (LD32(sprite + map[loc + 3]) >> cnt2)));
-			ST32((void*)(dark + 8), ((LD32(sprite + map[loc + 2] + 32) << cnt) | (LD32(sprite + map[loc + 3] + 32) >> cnt2)));
+			ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[loc + 2]), LD32(sprite + map[loc + 3]))));
+			ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[loc + 2] + 32), LD32(sprite + map[loc + 3] + 32))));
 
-			ST32((void*)(light + 12), ((LD32(sprite + map[loc + 3]) << cnt) | (LD32(sprite + map[loc + 4]) >> cnt2)));
-			ST32((void*)(dark + 12), ((LD32(sprite + map[loc + 3] + 32) << cnt) | (LD32(sprite + map[loc + 4] + 32) >> cnt2)));
+			ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[loc + 3]), LD32(sprite + map[loc + 4]))));
+			ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[loc + 3] + 32), LD32(sprite + map[loc + 4] + 32))));
 
-			ST32((void*)(light + 16), ((LD32(sprite + map[loc + 4]) << cnt) | (LD32(sprite + map[loc + 5]) >> cnt2)));
-			ST32((void*)(dark + 16), ((LD32(sprite + map[loc + 4] + 32) << cnt) | (LD32(sprite + map[loc + 5] + 32) >> cnt2)));
+			ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[loc + 4]), LD32(sprite + map[loc + 5]))));
+			ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[loc + 4] + 32), LD32(sprite + map[loc + 5] + 32))));
 
 			if(next_line[i] == 1) {
 				i++; h++;
@@ -500,20 +502,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			else l = loc;
 			cnt2 = 32 - cnt;
 
-			ST32((void*)(light), ((LD32(sprite + map[l]) << cnt) | (LD32(sprite + map[l + 1]) >> cnt2)));
-			ST32((void*)(dark), ((LD32(sprite + map[l] + 32) << cnt) | (LD32(sprite + map[l + 1] + 32) >> cnt2)));
+			ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[l]), LD32(sprite + map[l + 1]))));
+			ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[l] + 32), LD32(sprite + map[l + 1] + 32))));
 
-			ST32((void*)(light + 4), ((LD32(sprite + map[l + 1]) << cnt) | (LD32(sprite + map[l + 2]) >> cnt2)));
-			ST32((void*)(dark + 4), ((LD32(sprite + map[l + 1] + 32) << cnt) | (LD32(sprite + map[l + 2] + 32) >> cnt2)));
+			ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[l + 1]), LD32(sprite + map[l + 2]))));
+			ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[l + 1] + 32), LD32(sprite + map[l + 2] + 32))));
 
-			ST32((void*)(light + 8), ((LD32(sprite + map[l + 2]) << cnt) | (LD32(sprite + map[l + 3]) >> cnt2)));
-			ST32((void*)(dark + 8), ((LD32(sprite + map[l + 2] + 32) << cnt) | (LD32(sprite + map[l + 3] + 32) >> cnt2)));
+			ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[l + 2]), LD32(sprite + map[l + 3]))));
+			ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[l + 2] + 32), LD32(sprite + map[l + 3] + 32))));
 
-			ST32((void*)(light + 12), ((LD32(sprite + map[l + 3]) << cnt) | (LD32(sprite + map[l + 4]) >> cnt2)));
-			ST32((void*)(dark + 12), ((LD32(sprite + map[l + 3] + 32) << cnt) | (LD32(sprite + map[l + 4] + 32) >> cnt2)));
+			ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[l + 3]), LD32(sprite + map[l + 4]))));
+			ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[l + 3] + 32), LD32(sprite + map[l + 4] + 32))));
 
-			ST32((void*)(light + 16), ((LD32(sprite + map[l + 4]) << cnt) | (LD32(sprite + map[l + 5]) >> cnt2)));
-			ST32((void*)(dark + 16), ((LD32(sprite + map[l + 4] + 32) << cnt) | (LD32(sprite + map[l + 5] + 32) >> cnt2)));
+			ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[l + 4]), LD32(sprite + map[l + 5]))));
+			ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[l + 4] + 32), LD32(sprite + map[l + 5] + 32))));
 
 			if(next_line[i] == 1) {
 				i++; h++;
@@ -541,20 +543,20 @@ void draw_bg(unsigned char *bg_tile, BACKGROUND_HEADER *bg, void *metpack_base)
 			else l = loc;
 			cnt2 = 32 - cnt;
 
-			ST32((void*)(light), ((LD32(sprite + map[l]) << cnt) | (LD32(sprite + map[l + 1]) >> cnt2)));
-			ST32((void*)(dark), ((LD32(sprite + map[l] + 32) << cnt) | (LD32(sprite + map[l + 1] + 32) >> cnt2)));
+			ST32((void*)(light), (BGFUNNEL(LD32(sprite + map[l]), LD32(sprite + map[l + 1]))));
+			ST32((void*)(dark), (BGFUNNEL(LD32(sprite + map[l] + 32), LD32(sprite + map[l + 1] + 32))));
 
-			ST32((void*)(light + 4), ((LD32(sprite + map[l + 1]) << cnt) | (LD32(sprite + map[l + 2]) >> cnt2)));
-			ST32((void*)(dark + 4), ((LD32(sprite + map[l + 1] + 32) << cnt) | (LD32(sprite + map[l + 2] + 32) >> cnt2)));
+			ST32((void*)(light + 4), (BGFUNNEL(LD32(sprite + map[l + 1]), LD32(sprite + map[l + 2]))));
+			ST32((void*)(dark + 4), (BGFUNNEL(LD32(sprite + map[l + 1] + 32), LD32(sprite + map[l + 2] + 32))));
 
-			ST32((void*)(light + 8), ((LD32(sprite + map[l + 2]) << cnt) | (LD32(sprite + map[l + 3]) >> cnt2)));
-			ST32((void*)(dark + 8), ((LD32(sprite + map[l + 2] + 32) << cnt) | (LD32(sprite + map[l + 3] + 32) >> cnt2)));
+			ST32((void*)(light + 8), (BGFUNNEL(LD32(sprite + map[l + 2]), LD32(sprite + map[l + 3]))));
+			ST32((void*)(dark + 8), (BGFUNNEL(LD32(sprite + map[l + 2] + 32), LD32(sprite + map[l + 3] + 32))));
 
-			ST32((void*)(light + 12), ((LD32(sprite + map[l + 3]) << cnt) | (LD32(sprite + map[l + 4]) >> cnt2)));
-			ST32((void*)(dark + 12), ((LD32(sprite + map[l + 3] + 32) << cnt) | (LD32(sprite + map[l + 4] + 32) >> cnt2)));
+			ST32((void*)(light + 12), (BGFUNNEL(LD32(sprite + map[l + 3]), LD32(sprite + map[l + 4]))));
+			ST32((void*)(dark + 12), (BGFUNNEL(LD32(sprite + map[l + 3] + 32), LD32(sprite + map[l + 4] + 32))));
 
-			ST32((void*)(light + 16), ((LD32(sprite + map[l + 4]) << cnt) | (LD32(sprite + map[l + 5]) >> cnt2)));
-			ST32((void*)(dark + 16), ((LD32(sprite + map[l + 4] + 32) << cnt) | (LD32(sprite + map[l + 5] + 32) >> cnt2)));
+			ST32((void*)(light + 16), (BGFUNNEL(LD32(sprite + map[l + 4]), LD32(sprite + map[l + 5]))));
+			ST32((void*)(dark + 16), (BGFUNNEL(LD32(sprite + map[l + 4] + 32), LD32(sprite + map[l + 5] + 32))));
 
 			if(next_line[i] == 1) {
 				i++; h++;
