@@ -8,6 +8,7 @@
 #include "dlltiles.h"
 #include "dllenvironment.h"
 #include "globals.h"
+#include <stdint.h>
 
 const char sine_wave[] =	{2, 3, 3, 4, 4, 4, 3, 3, 2, 1, 1, 0, 0, 0, 1, 1};
 
@@ -150,7 +151,7 @@ void bg_draw()
 {
 	BACKGROUND_HEADER *bg = &glbs->bg_list[glbs->current_map.background];
 	short i = 0, y = 0, h;
-	unsigned long *light_src, *dark_src, *light, *dark;
+	uint32_t *light_src, *dark_src, *light, *dark;
 	short footer_level;
 	short water_level = glbs->water.top - glbs->camera.y;
 	short hieght;
@@ -193,8 +194,8 @@ void bg_draw()
 
 	i = 16 * glbs->camera.bg_tile_y + glbs->camera.bg_y_off;
 	light = glbs->light_buffer; dark = glbs->dark_buffer;
-	light_src = (long *)(glbs->bg_light + i * 24 + 2);
-	dark_src = (long *)(glbs->bg_dark + i * 24 + 2);
+	light_src = (uint32_t *)(glbs->bg_light + i * 24 + 2);
+	dark_src = (uint32_t *)(glbs->bg_dark + i * 24 + 2);
 	/*if(1) {
 		table_ptr = (char *)ripple_table + glbs->camera.bg_ripple * 16; h = 0;
 		while(y < hieght) {
@@ -212,7 +213,7 @@ void bg_draw()
 				y++;
 			}
 			if(y < hieght) {
-				i = 0; light_src = (long *)(glbs->bg_light + 2); dark_src = (long *)(glbs->bg_dark + 2);
+				i = 0; light_src = (uint32_t *)(glbs->bg_light + 2); dark_src = (uint32_t *)(glbs->bg_dark + 2);
 			}
 		}
 		return;
@@ -232,12 +233,12 @@ void bg_draw()
 			i++; y++;
 		}
 		if(y < hieght) {
-			i = 0; light_src = (long *)(glbs->bg_light + 2); dark_src = (long *)(glbs->bg_dark + 2);
+			i = 0; light_src = (uint32_t *)(glbs->bg_light + 2); dark_src = (uint32_t *)(glbs->bg_dark + 2);
 		}
 	}
 	if(footer_level < 100) {
-		light_src = (long *)(glbs->footer_light);
-		dark_src = (long *)(glbs->footer_dark);
+		light_src = (uint32_t *)(glbs->footer_light);
+		dark_src = (uint32_t *)(glbs->footer_dark);
 		while(y < 100) {
 			*light++ = *light_src++; *dark++ = *dark_src++;
 			*light++ = *light_src++; *dark++ = *dark_src++;
@@ -269,7 +270,7 @@ void bg_draw()
 				light_src = (void *)((char *)light_src + (4)); dark_src = (void *)((char *)dark_src + (4));
 				i++; y++; s = (s + 1) & 15;
 			}
-			i = 0; light_src = (long *)(glbs->bg_light + 2); dark_src = (long *)(glbs->bg_dark + 2);
+			i = 0; light_src = (uint32_t *)(glbs->bg_light + 2); dark_src = (uint32_t *)(glbs->bg_dark + 2);
 		}
 	}
 }
