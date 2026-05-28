@@ -11,6 +11,20 @@
 #include "miscgfx.h"
 #include "globals.h"
 
+// The gfx archive (Windows SpriteMaker output) is big-endian: each
+// SPRITE_HEADER array is prefixed by a big-endian frame count and each
+// header's .offset is big-endian. Swap offsets to host order in place.
+static void swap_sprite_headers(SPRITE_HEADER *h)
+{
+	unsigned char *p = (unsigned char *)h - 2;          // big-endian frame count
+	short count = (short)((p[0] << 8) | p[1]);
+	short i;
+	for(i = 0 ; i < count ; i++) {
+		unsigned short o = h[i].offset;
+		h[i].offset = (unsigned short)((o >> 8) | (o << 8));
+	}
+}
+
 char miscgfx_setup()
 {
 	short i;
@@ -46,10 +60,16 @@ char miscgfx_setup()
 	glbs->samus_death_header = ttarchive_data(file, 22);
 	glbs->samus_death_gfx = ttarchive_data(file, 23);
 
+	swap_sprite_headers(glbs->anim_header);
+	swap_sprite_headers(glbs->door_header);
+	swap_sprite_headers(glbs->shot_header);
+	swap_sprite_headers(glbs->powerup_header);
+
 	for(i = 0 ; i < 2 ; i++) {
 		data = ttarchive_data(file, 24 + i);
 		ridley_tail_data[i].frames = data + 2;
-		ridley_tail_data[i].frame_number = *(short *)(data);
+		ridley_tail_data[i].frame_number =
+			(short)((((unsigned char *)data)[0] << 8) | ((unsigned char *)data)[1]);  // big-endian
 	}
 
 	glbs->trig_table = (char *)(ttarchive_data(file, 12));

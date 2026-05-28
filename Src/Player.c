@@ -101,8 +101,18 @@ char player_setup()
 	file = file_pointer(SYMSTR("samus"));
 	if(file == NULL) return FALSE;
 
+	// samus gfx is big-endian (SpriteMaker output): swap the frame count and
+	// each SPRITE_HEADER.offset to host order.
 	frame_number = *((short *)file);
+	frame_number = (short)(((unsigned short)frame_number >> 8) | ((unsigned short)frame_number << 8));
 	player_header = (SPRITE_HEADER *)(file + 2);
+	{
+		short f;
+		for(f = 0 ; f < frame_number ; f++) {
+			unsigned short o = player_header[f].offset;
+			player_header[f].offset = (unsigned short)((o >> 8) | (o << 8));
+		}
+	}
 	player_gfx = (unsigned char *)(file + 2 + frame_number * sizeof(SPRITE_HEADER));
 
 	beam_select_wait = 0;
