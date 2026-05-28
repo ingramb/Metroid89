@@ -163,6 +163,16 @@ short _rowread(short mask)
             default: return 0;
         }
     }
+    // Walk-right autopilot (use with METROID89_SKIPTITLE): hold RIGHT and jump
+    // periodically to verify movement/animation/scrolling.
+    if (getenv("METROID89_WALK") && !(row & 0x0001)) {
+        Uint32 t = SDL_GetTicks();
+        short r;
+        if (t < 800) return 0;                  // let setup settle
+        r = 8;                                  // hold RIGHT
+        if ((t / 350) % 3 == 0) r |= 64;        // periodic jump
+        return r;
+    }
 
     // ARROWS_ROW (0xfffe, bit0): movement + 2nd/diamond/shift.
     if (!(row & 0x0001)) {
