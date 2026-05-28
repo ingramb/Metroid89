@@ -39,6 +39,8 @@ set(GAME_SRC
 set(PORT_SRC
     port/main_sdl.c
     port/platform/stubs.c
+    port/platform/tifile.c
+    port/platform/ttunpack_port.c
 )
 
 add_executable(metroid89 ${GAME_SRC} ${PORT_SRC})
@@ -51,6 +53,9 @@ target_include_directories(metroid89 PRIVATE
 )
 
 target_link_libraries(metroid89 PRIVATE ${SDL2_LIBRARIES})
+
+# Where the .89z/.89y data files live (the repo root, for now).
+target_compile_definitions(metroid89 PRIVATE DATA_DIR="${CMAKE_SOURCE_DIR}")
 
 # The game type-puns long*/short*/char* over the framebuffer and relies on
 # wrapping arithmetic; relax strict aliasing/overflow. Quiet legacy warnings.

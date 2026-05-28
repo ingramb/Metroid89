@@ -27,26 +27,8 @@ void  GrayDBufToggleSync(void) {}
 void  PortSet(void *p, short a, short b) { (void)p; (void)a; (void)b; }
 void  PortRestore(void) {}
 
-// ---------------------------------------------------------------------------
-// Heap / symbol table (stubbed; real version reads .89z files)
-// ---------------------------------------------------------------------------
-HSym       SymFind(const char *name) { (void)name; HSym h = {0,0}; return h; }
-SYM_ENTRY *SymFindPtr(const char *name, short flags) { (void)name; (void)flags; return 0; }
-HSym       SymAdd(const char *name) { (void)name; HSym h = {0,0}; return h; }
-SYM_ENTRY *DerefSym(HSym h) { (void)h; return 0; }
-void      *HLock(HANDLE h) { return (void *)h; }
-void      *HeapDeref(HANDLE h) { return (void *)h; }
-short      HeapLock(HANDLE h) { (void)h; return 1; }
-short      HeapUnlock(HANDLE h) { (void)h; return 1; }
-short      HeapGetLock(HANDLE h) { (void)h; return 1; }
-HANDLE     HeapPtrToHandle(void *p) { return (HANDLE)p; }
-HANDLE     HeapAlloc(unsigned long size) { return (HANDLE)malloc(size); }
-HANDLE     HeapAllocHigh(unsigned long size) { return (HANDLE)malloc(size); }
-void       HeapFree(HANDLE h) { free((void *)h); }
-HANDLE     HeapRealloc(HANDLE h, unsigned long size) { return (HANDLE)realloc((void *)h, size); }
-unsigned long HeapMax(void) { return 256UL * 1024; }
-unsigned long HeapAvail(void) { return 256UL * 1024; }
-void       HeapCompress(void) {}
+// Heap / symbol table / TTArchive / decompress: implemented in tifile.c and
+// ttunpack_port.c.
 
 // ---------------------------------------------------------------------------
 // Keyboard / console / RNG
@@ -96,10 +78,3 @@ void draw_map1(void *light, void *dark, TILE_DATA *tile_data, TILE_NODE *tl, TIL
     (void)light; (void)dark; (void)tile_data; (void)tl; (void)tlc;
 }
 
-// ---------------------------------------------------------------------------
-// TTArchive + decompression
-// ---------------------------------------------------------------------------
-short  ttarchive_valid(void *a) { (void)a; return 1; }
-void  *ttarchive_data(void *a, unsigned short i) { (void)a; (void)i; return 0; }
-// TODO(Phase 1): real ttunpack decompressor (port of Src/unpack.c) goes here.
-unsigned short decompress(unsigned char *src, unsigned char *dest) { (void)src; (void)dest; return 0; }
