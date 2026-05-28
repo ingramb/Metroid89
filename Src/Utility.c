@@ -334,48 +334,14 @@ void draw_number(short x, short y, unsigned short number, char *font, char digit
 	}
 }
 
+// Native port: present the two 1bpp planes to the SDL window. The old
+// double-buffer/plane-flip dance (for the calculator's interrupt-driven gray
+// emulation) is unnecessary -- we render straight from the hidden planes.
+extern void screen_present(const unsigned char *light, const unsigned char *dark);
+
 void update_screen()
 {
-	if(!glbs->use_flipping) {
-		register short i;
-		register long *src1 = (long *)glbs->light_buffer;
-		register long *src2 = (long *)glbs->dark_buffer;
-		register long *dest1 = (long *)GrayDBufGetActivePlane(0);
-		register long *dest2 = (long *)GrayDBufGetActivePlane(1);
-
-		if(glbs->display_width == 192) {
-			for(i = 0 ; i < glbs->display_hieght ; i++) {
-				*dest1++ = *src1++; *dest2++ = *src2++;
-				*dest1++ = *src1++; *dest2++ = *src2++;
-				*dest1++ = *src1++; *dest2++ = *src2++;
-				*dest1++ = *src1++; *dest2++ = *src2++;
-				*dest1++ = *src1++; *dest2++ = *src2++;
-				*dest1++ = *src1++; *dest2++ = *src2++;
-
-				dest1 = (long *)((char *)dest1 + 6); dest2 = (long *)((char *)dest2 + 6);
-				src1 = (long *)((char *)src1 + 6); src2 = (long *)((char *)src2 + 6);
-			}
-
-		} else {
-
-			for(i = 0 ; i < glbs->display_hieght ; i++) {
-				*dest1++ = *src1++; *dest2++ = *src2++;
-				*dest1++ = *src1++; *dest2++ = *src2++;
-				*dest1++ = *src1++; *dest2++ = *src2++;
-				*dest1++ = *src1++; *dest2++ = *src2++;
-				*dest1++ = *src1++; *dest2++ = *src2++;
-
-				dest1 = (long *)((char *)dest1 + 10); dest2 = (long *)((char *)dest2 + 10);
-				src1 = (long *)((char *)src1 + 10); src2 = (long *)((char *)src2 + 10);
-			}
-		}
-
-	} else {
-		GrayDBufToggleSync();
-		glbs->light_buffer = GrayDBufGetHiddenPlane(0);
-		glbs->dark_buffer = GrayDBufGetHiddenPlane(1);
-	}
-
+	screen_present(glbs->light_buffer, glbs->dark_buffer);
 	glbs->frames++;
 }
 

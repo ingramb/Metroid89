@@ -48,6 +48,7 @@ set(PORT_SRC
     port/platform/stubs.c
     port/platform/tifile.c
     port/platform/ttunpack_port.c
+    port/platform/sprite_shim.c
 )
 
 add_executable(metroid89 ${GAME_SRC} ${PORT_SRC})

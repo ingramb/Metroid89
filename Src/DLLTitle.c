@@ -8,6 +8,7 @@
 #include "map.h"
 #include "utility.h"
 #include "globals.h"
+#include "bitops.h"
 
 unsigned char samus_select[1224] = {
 	//sprite 0
@@ -69,17 +70,22 @@ void draw_samus_select(short y, short frame)
 
 void draw_title(char *buffer, short y)
 {
-	long *light = (long *)(glbs->light_buffer + 30 * y);
-	long *dark = (long *)(glbs->dark_buffer + 30 * y);
-	long *sprite0 = (long *)(buffer);
-	long *sprite1 = (long *)(buffer + 78 * 20);
-	long *mask = (long *)(buffer + 78 * 20 * 2);
+	// NOTE: the original used `long` as a 32-bit word (m68k). On LP64 `long` is
+	// 64-bit, so we use a 32-bit type for the pointer stride to stay correct.
+	unsigned int *light = (unsigned int *)(glbs->light_buffer + 30 * y);
+	unsigned int *dark = (unsigned int *)(glbs->dark_buffer + 30 * y);
+	unsigned int *sprite0 = (unsigned int *)(buffer);
+	unsigned int *sprite1 = (unsigned int *)(buffer + 78 * 20);
+	unsigned int *mask = (unsigned int *)(buffer + 78 * 20 * 2);
 	short i, j;
 
 	for(i = 0 ; i < 78 ; i++) {
 		for(j = 0 ; j < 5 ; j++) {
-			*light &= *mask; *dark &= *mask++;
-			*light++ |= *sprite0++; *dark++ |= *sprite1++;
+			unsigned long mv = LD32(mask++);
+			ST32(light, LD32(light) & mv);
+			ST32(dark,  LD32(dark)  & mv);
+			ST32(light, LD32(light) | LD32(sprite0++)); light++;
+			ST32(dark,  LD32(dark)  | LD32(sprite1++)); dark++;
 		}
 		light = (void *)((char *)light + (10));
 		dark = (void *)((char *)dark + (10));

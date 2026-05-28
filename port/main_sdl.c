@@ -69,6 +69,33 @@ void screen_present(const unsigned char *light, const unsigned char *dark)
         }
     }
 
+    // Debug: METROID89_SHOT=path:frame saves the computed SCREEN_WxSCREEN_H frame
+    // as BMP and exits. Captured straight from the pixel buffer (not via
+    // RenderReadPixels, which is unreliable after Present).
+    {
+        static int frame = 0;
+        const char *env = getenv("METROID89_SHOT");
+        frame++;
+        if (env) {
+            char path[512]; int want = 1;
+            const char *colon = strrchr(env, ':');
+            if (colon) { want = atoi(colon + 1); snprintf(path, sizeof(path), "%.*s", (int)(colon - env), env); }
+            else snprintf(path, sizeof(path), "%s", env);
+            if (frame == want) {
+                SDL_Surface *s = SDL_CreateRGBSurfaceWithFormat(0, SCREEN_W, SCREEN_H, 32, SDL_PIXELFORMAT_ARGB8888);
+                int yy;
+                for (yy = 0; yy < SCREEN_H; yy++)
+                    memcpy((unsigned char *)s->pixels + yy * s->pitch,
+                           (unsigned char *)pixels + yy * pitch, SCREEN_W * 4);
+                SDL_SaveBMP(s, path);
+                SDL_FreeSurface(s);
+                SDL_UnlockTexture(g_texture);
+                screen_quit();
+                exit(0);
+            }
+        }
+    }
+
     SDL_UnlockTexture(g_texture);
     SDL_RenderClear(g_renderer);
     SDL_RenderCopy(g_renderer, g_texture, NULL, NULL);
@@ -83,35 +110,76 @@ void screen_quit(void)
     SDL_Quit();
 }
 
-// Phase-0 smoke test: draw the four gray levels as bands and show them.
-// (Will be replaced by a call into the game's _main() once the engine is up.)
+// --- input: emulate the TI-89 keyboard matrix that _rowread() polls ---------
+// The game selects a matrix row via an active-low mask (one cleared bit) and
+// reads back the key bits for that row. We map physical Mac keys to the exact
+// (row, bit) positions the game tests (see Src/Player.c, Utility.h).
+
+static int g_should_quit = 0;
+
+void platform_pump(void)
+{
+    SDL_Event e;
+    SDL_PumpEvents();
+    while (SDL_PollEvent(&e)) {
+        if (e.type == SDL_QUIT) g_should_quit = 1;
+    }
+}
+
+int platform_should_quit(void) { return g_should_quit; }
+
+short _rowread(short mask)
+{
+    const Uint8 *k;
+    unsigned short row = (unsigned short)mask;   // active-low: cleared bit = selected
+    short r = 0;
+    platform_pump();
+    k = SDL_GetKeyboardState(NULL);
+
+    // ARROWS_ROW (0xfffe, bit0): movement + 2nd/diamond/shift.
+    if (!(row & 0x0001)) {
+        if (k[SDL_SCANCODE_UP])     r |= 1;    // UP_KEY
+        if (k[SDL_SCANCODE_LEFT])   r |= 2;    // LEFT_KEY
+        if (k[SDL_SCANCODE_DOWN])   r |= 4;    // DOWN_KEY
+        if (k[SDL_SCANCODE_RIGHT])  r |= 8;    // RIGHT_KEY
+        if (k[SDL_SCANCODE_Z])      r |= 16;   // SEL_KEY  (2nd / shoot)
+        if (k[SDL_SCANCODE_LSHIFT] || k[SDL_SCANCODE_RSHIFT]) r |= 32; // SHIFT (cheat)
+        if (k[SDL_SCANCODE_SPACE])  r |= 64;   // DMND_KEY (diamond / jump)
+    }
+    // ESC_ROW (0xffbf, bit6)
+    if (!(row & 0x0040)) {
+        if (k[SDL_SCANCODE_ESCAPE]) r |= 1;    // ESC_KEY
+    }
+    // APPS_ROW (0xffdf, bit5): APPS=bit0 (map), F1=bit7 (beam select)
+    if (!(row & 0x0020)) {
+        if (k[SDL_SCANCODE_A] || k[SDL_SCANCODE_TAB]) r |= 1;   // APPS_KEY
+        if (k[SDL_SCANCODE_F1]) r |= 128;                       // beam
+    }
+    // 0xffef bit4: F2 (missile) at bit7
+    if (!(row & 0x0010)) { if (k[SDL_SCANCODE_F2]) r |= 128; }
+    // 0xfff7 bit3: F3 (super missile) at bit7
+    if (!(row & 0x0008)) { if (k[SDL_SCANCODE_F3]) r |= 128; }
+    // 0xfffb bit2 (BSPACE_ROW): diag-up=bit6, F4 (power bomb)=bit7
+    if (!(row & 0x0004)) {
+        if (k[SDL_SCANCODE_Q]) r |= 64;     // BSPACE_KEY (diagonal up)
+        if (k[SDL_SCANCODE_F4]) r |= 128;   // power bomb
+    }
+    // 0xfffd bit1 (CLEAR_ROW): diag-down=bit6, reverse-grav=bit7, plus=bit1, minus=bit2
+    if (!(row & 0x0002)) {
+        if (k[SDL_SCANCODE_E]) r |= 64;     // CLEAR_KEY (diagonal down)
+        if (k[SDL_SCANCODE_F5]) r |= 128;   // reverse gravity
+        if (k[SDL_SCANCODE_EQUALS]) r |= 2; // plus  (grayscale adjust)
+        if (k[SDL_SCANCODE_MINUS]) r |= 4;  // minus
+    }
+    return r;
+}
+
+extern void _main(void);   // the game entry point (Src/metroid.c)
+
 int main(void)
 {
-    unsigned char light[PLANE_STRIDE * SCREEN_H];
-    unsigned char dark[PLANE_STRIDE * SCREEN_H];
-    int running = 1;
-
     if (!screen_init()) return 1;
-
-    for (int y = 0; y < SCREEN_H; y++) {
-        for (int xb = 0; xb < PLANE_STRIDE; xb++) {
-            // Four vertical bands of the four gray levels.
-            int band = (xb * 8) * 4 / SCREEN_W;
-            light[y * PLANE_STRIDE + xb] = (band & 1) ? 0xFF : 0x00;
-            dark[y * PLANE_STRIDE + xb]  = (band & 2) ? 0xFF : 0x00;
-        }
-    }
-
-    while (running) {
-        SDL_Event e;
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) running = 0;
-            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) running = 0;
-        }
-        screen_present(light, dark);
-        SDL_Delay(16);
-    }
-
+    _main();
     screen_quit();
     return 0;
 }

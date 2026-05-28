@@ -31,9 +31,8 @@ void  PortRestore(void) {}
 // ttunpack_port.c.
 
 // ---------------------------------------------------------------------------
-// Keyboard / console / RNG
+// Console / RNG  (_rowread lives in main_sdl.c with the SDL keyboard state)
 // ---------------------------------------------------------------------------
-short _rowread(short mask) { (void)mask; return 0; }
 int   ngetchx(void) { return 0; }
 void  clrscr(void) {}
 void  ClrScr(void) {}
@@ -50,23 +49,7 @@ INT_HANDLER GetIntVec(short n) { (void)n; return DUMMY_HANDLER; }
 void        SetIntVec(short n, INT_HANDLER h) { (void)n; (void)h; }
 void        ExecuteHandler(INT_HANDLER h) { if (h) h(); }
 
-// ---------------------------------------------------------------------------
-// ExtGraph drawing (stubbed; real versions in sprite_shim.c)
-// ---------------------------------------------------------------------------
-void FastDrawLine(void *p, short x1, short y1, short x2, short y2, short m) { (void)p;(void)x1;(void)y1;(void)x2;(void)y2;(void)m; }
-void FastDrawHLine(void *p, short x1, short x2, short y, short m) { (void)p;(void)x1;(void)x2;(void)y;(void)m; }
-void FastDrawLine2(void *p, short x1, short y1, short x2, short y2, short m) { (void)p;(void)x1;(void)y1;(void)x2;(void)y2;(void)m; }
-
-void GraySprite8_OR  (short x,short y,short h,unsigned char*l,unsigned char*d,void*lb,void*db){(void)x;(void)y;(void)h;(void)l;(void)d;(void)lb;(void)db;}
-void GraySprite8_XOR (short x,short y,short h,unsigned char*l,unsigned char*d,void*lb,void*db){(void)x;(void)y;(void)h;(void)l;(void)d;(void)lb;(void)db;}
-void GraySprite8_MASK(short x,short y,short h,unsigned char*l,unsigned char*d,unsigned char*m,unsigned char*m2,void*lb,void*db){(void)x;(void)y;(void)h;(void)l;(void)d;(void)m;(void)m2;(void)lb;(void)db;}
-void GraySprite8_BLIT(short x,short y,short h,unsigned char*l,unsigned char*d,unsigned char m,void*lb,void*db){(void)x;(void)y;(void)h;(void)l;(void)d;(void)m;(void)lb;(void)db;}
-
-void GraySprite16_OR  (short x,short y,short h,unsigned short*l,unsigned short*d,void*lb,void*db){(void)x;(void)y;(void)h;(void)l;(void)d;(void)lb;(void)db;}
-void GraySprite16_XOR (short x,short y,short h,unsigned short*l,unsigned short*d,void*lb,void*db){(void)x;(void)y;(void)h;(void)l;(void)d;(void)lb;(void)db;}
-void GraySprite16_MASK(short x,short y,short h,unsigned short*l,unsigned short*d,unsigned short*m,void*lb,void*db){(void)x;(void)y;(void)h;(void)l;(void)d;(void)m;(void)lb;(void)db;}
-
-void SpriteX8_MIRROR_H(short h, unsigned char *src, short bw, unsigned char *dest) { (void)h;(void)src;(void)bw;(void)dest; }
+// FastDraw* / GraySprite8 / GraySprite16 / SpriteX8_MIRROR_H: see sprite_shim.c.
 
 // The three clip-MASK routines that were hand-written m68k asm (missing .s files).
 void GraySpriteClip8_MASK (short x,short y,short h,unsigned char*s,void*lb,void*db){(void)x;(void)y;(void)h;(void)s;(void)lb;(void)db;}
