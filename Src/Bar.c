@@ -626,18 +626,19 @@ void bar_draw()
 		}
 	}
 
+	// Minimap composite. The mask is a literal (not a buffer), so it must be
+	// applied big-endian to hit the leftmost pixels of the framebuffer word;
+	// map_light/map_dark were produced big-endian (ST32) too.
 	dest1 = glbs->light_buffer + 16;
 	dest2 = glbs->dark_buffer + 16;
 	src1 = map_light;
 	src2 = map_dark;
 	for(i = 0 ; i < 15 ; i++) {
-		*dest1 &= 0b11111100000000000000000000000000;
-		*dest2 &= 0b11111100000000000000000000000000;
-		*dest1 |= *src1++;
-		*dest2 |= *src2++;
+		ST32(dest1, (LD32(dest1) & 0xFC000000u) | LD32(src1)); src1++;
+		ST32(dest2, (LD32(dest2) & 0xFC000000u) | LD32(src2)); src2++;
 		dest1 = (void *)((char *)dest1 + 30);
 		dest2 = (void *)((char *)dest2 + 30);
 	}
-	*dest1 &= 0b11111100000000000000000000000000;
-	*dest2 &= 0b11111100000000000000000000000000;
+	ST32(dest1, LD32(dest1) & 0xFC000000u);
+	ST32(dest2, LD32(dest2) & 0xFC000000u);
 }

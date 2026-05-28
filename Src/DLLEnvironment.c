@@ -8,6 +8,8 @@
 #include "dllentity.h"
 #include "player.h"
 #include "globals.h"
+#include "bitops.h"
+#include <stdint.h>
 
 #define WATER_ANIM_DELAY 9
 
@@ -107,27 +109,29 @@ void draw_spotlight_strip(short x1, short x2, short y) {
     if(dx < 1) return;
     sx = x1 & 0x000f;
 
+    // Plane words are big-endian (MSB = leftmost pixel); access via LD/ST so the
+    // masks line up and the 32-bit case writes 4 bytes (not 8 as 'long' on arm64).
     if (dx<16) {
         unsigned long val = (ASM_SWAP(table2[dx])) >> sx;
-        *(unsigned long*)p1 = (*(unsigned long*)p1 & ~val) | (~*(unsigned long*)p2 & val);
-        *(unsigned long*)p2 |= val;
+        ST32(p1, (LD32(p1) & ~val) | (~LD32(p2) & val));
+        ST32(p2, LD32(p2) | val);
 
         return;
     }
 
     if (sx) {
-        *p1 = (*p1 & ~table1[sx]) | (~*p2 & table1[sx]); p1++;
-        *p2++ |= table1[sx];
+        ST16(p1, (LD16(p1) & ~table1[sx]) | (~LD16(p2) & table1[sx])); p1++;
+        ST16(p2, LD16(p2) | table1[sx]); p2++;
         dx -= (16-sx);
     }
     while (dx >= 16) {
-        *p1++ = ~*p2;
-        *p2++ |= 0xffff;
+        ST16(p1, ~LD16(p2)); p1++;
+        ST16(p2, 0xffff); p2++;
         dx-=16;
     }
     if (dx) {
-    	*p1 = (*p1 & ~table2[dx]) | (~*p2 & table2[dx]);
-    	*p2 |= table2[dx];
+    	ST16(p1, (LD16(p1) & ~table2[dx]) | (~LD16(p2) & table2[dx]));
+    	ST16(p2, LD16(p2) | table2[dx]);
     }
 }
 
@@ -136,8 +140,8 @@ void draw_spotlight(short xc, short yc, short r)
 	register short x;
 	register short y = r;
 	register short p = 3 - 2 * r;
-	register long *addr1 = glbs->light_buffer;
-	register long *addr2 = glbs->dark_buffer;
+	register uint32_t *addr1 = glbs->light_buffer;
+	register uint32_t *addr2 = glbs->dark_buffer;
 
   for(x = 0 ; x < yc - r ; x++) {
   	*addr1++ = ~*addr2; *addr2++ |= 0xffffffff;
