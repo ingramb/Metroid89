@@ -4,6 +4,7 @@
 //#define OPTIMIZE_ROM_CALLS    // Use ROM Call Optimization
 
 #include <tigcclib.h>         // Include All Header Files
+#include <stdint.h>
 //#include "extgraph.h"
 #include "utility.h"
 #include "tiles.h"
@@ -32,14 +33,14 @@ short door_number;
 
 char opened_doors[OPENED_DOORS_SIZE];
 
-void fade_1(long *dst_light, long *dst_dark, long *light, long *dark);
-void fade_2(long *dst_light, long *dst_dark, long *light, long *dark);
-void fade_3(long *dst_light, long *dst_dark, long *light, long *dark);
-void fade_4(long *dst_light, long *dst_dark, long *light, long *dark);
-void fade_5(long *dst_light, long *dst_dark, long *light, long *dark);
-void fade_6(long *dst_light, long *dst_dark, long *light, long *dark);
+void fade_1(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark);
+void fade_2(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark);
+void fade_3(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark);
+void fade_4(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark);
+void fade_5(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark);
+void fade_6(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark);
 
-void (*fade_funcs[])(long *dst_light, long *dst_dark, long *light, long *dark) =
+void (*fade_funcs[])(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark) =
 	{fade_1, fade_2, fade_3, fade_4, fade_5, fade_6};
 
 char door_init(DOOR_HEADER *header, short number)
@@ -171,37 +172,37 @@ char door_open(DOOR *door, short damage_type)
 	return TRUE;
 }
 
-void fade_1(long *dst_light, long *dst_dark, long *light, long *dark)
+void fade_1(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark)
 {
 	*dst_light = (*light | ~(*dark));
 	*dst_dark = *dark;
 }
 
-void fade_2(long *dst_light, long *dst_dark, long *light, long *dark)
+void fade_2(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark)
 {
 	*dst_light = ~(*light ^ *dark);
 	*dst_dark = (*light | *dark);
 }
 
-void fade_3(long *dst_light, long *dst_dark, long *light, long *dark)
+void fade_3(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark)
 {
 	*dst_light = (~(*light) | *dark);
 	*dst_dark = (*light | *dark);
 }
 
-void fade_4(long *dst_light, long *dst_dark, long *light, long *dark)
+void fade_4(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark)
 {
 	*dst_light = (*light & *dark);
 	*dst_dark = 0xffffffff;
 }
 
-void fade_5(long *dst_light, long *dst_dark, long *light, long *dark)
+void fade_5(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark)
 {
 	*dst_light = (~(*light) | ~(*dark));
 	*dst_dark = 0xffffffff;
 }
 
-void fade_6(long *dst_light, long *dst_dark, long *light, long *dark)
+void fade_6(uint32_t *dst_light, uint32_t *dst_dark, uint32_t *light, uint32_t *dark)
 {
 	*dst_light = 0xffffffff;
 	*dst_dark = 0xffffffff;
@@ -224,10 +225,10 @@ void door_draw_stub(short x, short y, short type)
 			glbs->door_gfx + header->offset, header->width, FALSE);
 }
 
-void fade(short b, long *light, long *dark, DOOR *door, char draw_player)
+void fade(short b, uint32_t *light, uint32_t *dark, DOOR *door, char draw_player)
 {
-	register long *dst_light = glbs->light_buffer;
-	register long *dst_dark = glbs->dark_buffer;
+	register uint32_t *dst_light = glbs->light_buffer;
+	register uint32_t *dst_dark = glbs->dark_buffer;
 	register short i;
 
 	glbs->timer = 25;
@@ -273,7 +274,7 @@ void fade(short b, long *light, long *dark, DOOR *door, char draw_player)
 	while(glbs->timer);
 }
 
-void fade_out(long *light, long *dark, DOOR *door)
+void fade_out(uint32_t *light, uint32_t *dark, DOOR *door)
 {
 	short i;
 
@@ -288,7 +289,7 @@ void fade_out(long *light, long *dark, DOOR *door)
 	//while(glbs->timer);
 }
 
-void fade_out_player(long *light, long *dark)
+void fade_out_player(uint32_t *light, uint32_t *dark)
 {
 	short i;
 
@@ -301,7 +302,7 @@ void fade_out_player(long *light, long *dark)
 	//while(glbs->timer);
 }
 
-void fade_in(long *light, long *dark, DOOR *door)
+void fade_in(uint32_t *light, uint32_t *dark, DOOR *door)
 {
 	short i;
 
@@ -338,7 +339,7 @@ void door_enter(DOOR *door)
 	memcpy(light, glbs->light_buffer, LCD_SIZE);
 	memcpy(dark, glbs->dark_buffer, LCD_SIZE);
 
-	fade_out((long *)light, (long *)dark, &old_door);
+	fade_out((uint32_t *)light, (uint32_t *)dark, &old_door);
 
 	set_map(old_door.target_map);
 
@@ -422,7 +423,7 @@ void door_enter(DOOR *door)
 	memcpy(light, glbs->light_buffer, LCD_SIZE);
 	memcpy(dark, glbs->dark_buffer, LCD_SIZE);
 
-	fade_in((long *)light, (long *)dark, doors + target_door);
+	fade_in((uint32_t *)light, (uint32_t *)dark, doors + target_door);
 
 	if(doors[target_door].level != DOOR_BLANK) {
 		doors[target_door].status = DOOR_CLOSING;
@@ -446,7 +447,7 @@ void elevator_change_map(short i)
 
 	memcpy(light, glbs->light_buffer, LCD_SIZE);
 	memcpy(dark, glbs->dark_buffer, LCD_SIZE);
-	fade_out((long *)light, (long *)dark, NULL);
+	fade_out((uint32_t *)light, (uint32_t *)dark, NULL);
 
 	set_map(d->target_map);
 	d = doors + target_elevator;
@@ -458,7 +459,7 @@ void elevator_change_map(short i)
 	screen_draw();
 	memcpy(light, glbs->light_buffer, LCD_SIZE);
 	memcpy(dark, glbs->dark_buffer, LCD_SIZE);
-	fade_in((long *)light, (long *)dark, NULL);
+	fade_in((uint32_t *)light, (uint32_t *)dark, NULL);
 
 	glbs->game_counter = 0;
 }

@@ -354,7 +354,12 @@ void platform_timer_tick(void)
 {
 	if(glbs_base == NULL) return;
 	glbs_base->game_counter++;
-	if(glbs_base->timer > 0) glbs_base->timer--;
+	// On the calculator the delay()/fade countdown ran on a faster interrupt
+	// (~3-4x the game-logic rate), so decrement it faster here, clamped at 0.
+	if(glbs_base->timer > 0) {
+		glbs_base->timer -= 4;
+		if(glbs_base->timer < 0) glbs_base->timer = 0;
+	}
 	if(++glbs_base->fps_counter >= platform_hz()) {
 		glbs_base->fps_counter = 0;
 		glbs_base->seconds++;

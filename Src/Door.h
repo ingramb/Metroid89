@@ -3,6 +3,7 @@
 
 #ifndef __DOOR__
 #define __DOOR__
+#include <stdint.h>
 
 typedef struct {
 	short x;
@@ -76,9 +77,9 @@ void door_process();
 void door_draw();
 void elevator_enter(short i);
 
-void fade_out(long *light, long *dark, DOOR *door);
-void fade_out_player(long *light, long *dark);
-void fade_in(long *light, long *dark, DOOR *door);
+void fade_out(uint32_t *light, uint32_t *dark, DOOR *door);
+void fade_out_player(uint32_t *light, uint32_t *dark);
+void fade_in(uint32_t *light, uint32_t *dark, DOOR *door);
 
 #endif
 
