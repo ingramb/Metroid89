@@ -110,7 +110,10 @@ if(EMSCRIPTEN)
         list(APPEND PRELOAD_ARGS "SHELL:--preload-file ${CMAKE_SOURCE_DIR}/${f}@/data/${f}")
     endforeach()
 
-    target_compile_definitions(metroid89 PRIVATE DATA_DIR="/data")
+    # Build stamp shown on-screen so we can confirm a fresh build actually loaded
+    # (iOS Safari caches .js/.wasm aggressively). Refreshed on every reconfigure.
+    string(TIMESTAMP BUILD_ID "%Y%m%d-%H%M%S")
+    target_compile_definitions(metroid89 PRIVATE DATA_DIR="/data" BUILD_ID="${BUILD_ID}")
     target_compile_options(metroid89 PRIVATE -sUSE_SDL=2 -O2)
     target_link_options(metroid89 PRIVATE
         -sUSE_SDL=2

@@ -310,8 +310,22 @@ short _rowread(short mask)
 
 extern void _main(void);   // the game entry point (Src/metroid.c)
 
+#ifndef BUILD_ID
+#define BUILD_ID "dev"
+#endif
+
 int main(void)
 {
+#ifdef __EMSCRIPTEN__
+    // Stamp the build id into the page so we can confirm a fresh build loaded
+    // (this runs from the WASM, so a matching stamp proves the .wasm is current).
+    {
+        char js[256];
+        snprintf(js, sizeof(js),
+            "var e=document.getElementById('ver'); if(e) e.textContent='build: %s';", BUILD_ID);
+        emscripten_run_script(js);
+    }
+#endif
     if (!screen_init()) return 1;
     _main();
     screen_quit();
