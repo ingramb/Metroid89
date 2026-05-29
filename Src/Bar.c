@@ -409,14 +409,18 @@ void status_screen()
 		light = glbs->light_buffer + 15 * 30;
 		dark = glbs->dark_buffer + 15 * 30;
 		for(i = 15 ; i <= 94 ; i++) {
-			*(short *)light &= 0b1111100000000000; light += 2;
-			*(short *)dark &= 0b1111100000000000; dark += 2;
+			// Clear the map interior per row, preserving the left/right border
+			// columns. The masks are big-endian (byte 0 = leftmost pixels), so go
+			// through LD16/ST16 -- a raw *(short*) swaps the bytes on a LE host and
+			// erases the border instead of the interior.
+			ST16(light, LD16(light) & 0xF800); light += 2;
+			ST16(dark,  LD16(dark)  & 0xF800); dark += 2;
 			for(j = 0 ; j < 4 ; j++) {
 				ST32((void*)light, 0); light += 4;
 				ST32((void*)dark, 0); dark += 4;
 			}
-			*(short *)light &= 0b0000000000011111; light += 12;
-			*(short *)dark &=0b0000000000011111; dark += 12;
+			ST16(light, LD16(light) & 0x001F); light += 12;
+			ST16(dark,  LD16(dark)  & 0x001F); dark += 12;
 		}
 
 		for(x = 0 ; x < 30 ; x++) {
