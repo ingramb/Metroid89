@@ -5,6 +5,7 @@
 
 #include <tigcclib.h>         // Include All Header Files
 #include "utility.h"
+#include "bitops.h"           // big-endian 16/32-bit framebuffer access
 //#include "extgraph.h"
 #include "entity.h"
 #include "tiles.h"
@@ -65,27 +66,29 @@ void DrawBombStrip(short x1, short x2, short y) {
     if(dx < 1) return;
     sx = x1 & 0x000f;
 
+    // The framebuffer is big-endian words on m68k; route the word writes through
+    // LD/ST helpers (raw *(long*) is an 8-byte LE write on the host).
     if (dx<16) {
         unsigned long val = (ASM_SWAP(table2[dx])) >> sx;
-        *(unsigned long*)p1 ^= val;
-        *(unsigned long*)p2 &= ~val;
+        ST32(p1, LD32(p1) ^ val);
+        ST32(p2, LD32(p2) & ~val);
 
         return;
     }
 
     if (sx) {
-        *p1++ ^= table1[sx];
-        *p2++ &= ~table1[sx];
+        ST16(p1, LD16(p1) ^ table1[sx]);  p1++;
+        ST16(p2, LD16(p2) & ~table1[sx]); p2++;
         dx -= (16-sx);
     }
     while (dx >= 16) {
-        *p1++ ^= 0xffff;
-        *p2++ &= ~0xffff;
+        ST16(p1, LD16(p1) ^ 0xffff);  p1++;
+        ST16(p2, LD16(p2) & ~0xffff); p2++;
         dx-=16;
     }
     if (dx) {
-    	*p1 ^= table2[dx];
-    	*p2 &= ~table2[dx];
+    	ST16(p1, LD16(p1) ^ table2[dx]);
+    	ST16(p2, LD16(p2) & ~table2[dx]);
     }
 }
 

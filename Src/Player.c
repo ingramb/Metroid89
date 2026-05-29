@@ -5,6 +5,7 @@
 
 #include <tigcclib.h>         // Include All Header Files
 #include <extgraph.h>
+#include "bitops.h"           // big-endian 32-bit framebuffer access
 #include "tiles.h"
 #include "entity.h"
 #include "enemy.h"
@@ -1677,11 +1678,12 @@ void player_draw_gravity_bar()
 	unsigned long row = 0x00ffffff >> (24 - len);
 
 	for(i = 0 ; i < 5 ; i++) {
-		*(long *)light &= 0b11111100000000000000000000000000;
-		*(long *)dark &= 0b11111100000000000000000000000000;
+		// big-endian 32-bit framebuffer words (raw *(long*) is 8-byte LE on host)
+		ST32(light, LD32(light) & 0b11111100000000000000000000000000UL);
+		ST32(dark,  LD32(dark)  & 0b11111100000000000000000000000000UL);
 		if(i > 0 && i < 4) {
-			*(long *)light |= (0x00ffffff << 1);
-			*(long *)dark |= (row << 1);
+			ST32(light, LD32(light) | (0x00ffffffUL << 1));
+			ST32(dark,  LD32(dark)  | (row << 1));
 		}
 		light += 30;
 		dark += 30;

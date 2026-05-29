@@ -57,8 +57,9 @@ void draw_samus_select(short y, short frame)
 	short h, i;
 
 	for(h = 17 ; h ; h--) {
-		*(long *)light |= 0b00111111111111111111000000000000;
-		*(long *)dark |= 0b00111111111111111111000000000000;
+		// big-endian 32-bit framebuffer words (raw *(long*) is 8-byte LE on host)
+		ST32(light, LD32(light) | 0b00111111111111111111000000000000UL);
+		ST32(dark,  LD32(dark)  | 0b00111111111111111111000000000000UL);
 		for(i = 0 ; i < 3 ; i++) {
 			*light &= *mask; *dark &= *mask++;
 			*light++ |= *sprite1++; *dark++ |= *sprite2++;
