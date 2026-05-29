@@ -24,8 +24,11 @@
 #ifdef __EMSCRIPTEN__
 void platform_yield(void);
 #define PLATFORM_YIELD() platform_yield()
+void web_dbg(const char *s);   /* DEBUG: show a literal string in the corner readout */
+#define WEB_DBG(s) web_dbg(s)
 #else
 #define PLATFORM_YIELD() ((void)0)
+#define WEB_DBG(s) ((void)0)
 #endif
 
 // ---------------------------------------------------------------------------

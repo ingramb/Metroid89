@@ -175,6 +175,15 @@ void platform_yield(void)
     platform_clock_pump();
     emscripten_sleep(0);
 }
+
+// DEBUG: write a string into the on-screen #savedbg readout (no single quotes).
+void web_dbg(const char *s)
+{
+    char js[320];
+    snprintf(js, sizeof(js),
+        "var e=document.getElementById('savedbg'); if(e) e.textContent='%s';", s ? s : "");
+    emscripten_run_script(js);
+}
 #endif
 
 // Game-clock frequency. The calculator drove logic off its programmable timer
