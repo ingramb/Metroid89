@@ -504,3 +504,21 @@ void GraySpriteClipVFlipX8_MASK(
 	        mask -= b1;
 	    }
 }
+
+// The fixed-width 8/16/32-pixel MASK blitters were hand-written m68k asm (the
+// missing ClipSprite{8,16,32}_MASK_R.s). They are just the bytewidth 1/2/4 cases
+// of the generic GraySpriteClipX8_MASK above, which draws into glbs->light_buffer
+// / glbs->dark_buffer -- exactly the lb/db every caller passes. (Used by bombs,
+// the leach link, the special-station arrows, and Ridley's tail.)
+void GraySpriteClip8_MASK(short x, short y, short h, char* s, void* lb, void* db) {
+	(void)lb; (void)db;
+	GraySpriteClipX8_MASK(x, y, h, (unsigned char*)s, 1, FALSE);
+}
+void GraySpriteClip16_MASK(short x, short y, short h, short* s, void* lb, void* db) {
+	(void)lb; (void)db;
+	GraySpriteClipX8_MASK(x, y, h, (unsigned char*)s, 2, FALSE);
+}
+void GraySpriteClip32_MASK(short x, short y, short h, long* s, void* lb, void* db) {
+	(void)lb; (void)db;
+	GraySpriteClipX8_MASK(x, y, h, (unsigned char*)s, 4, FALSE);
+}

@@ -51,10 +51,8 @@ void        ExecuteHandler(INT_HANDLER h) { if (h) h(); }
 
 // FastDraw* / GraySprite8 / GraySprite16 / SpriteX8_MIRROR_H: see sprite_shim.c.
 
-// The three clip-MASK routines that were hand-written m68k asm (missing .s files).
-void GraySpriteClip8_MASK (short x,short y,short h,unsigned char*s,void*lb,void*db){(void)x;(void)y;(void)h;(void)s;(void)lb;(void)db;}
-void GraySpriteClip16_MASK(short x,short y,short h,unsigned short*s,void*lb,void*db){(void)x;(void)y;(void)h;(void)s;(void)lb;(void)db;}
-void GraySpriteClip32_MASK(short x,short y,short h,unsigned long*s,void*lb,void*db){(void)x;(void)y;(void)h;(void)s;(void)lb;(void)db;}
+// GraySpriteClip{8,16,32}_MASK are implemented in Src/dllClipSprites.c (wrappers
+// over the generic GraySpriteClipX8_MASK) -- previously empty stubs here.
 
 // draw_map1 is now implemented in DLLMap.c.
 
