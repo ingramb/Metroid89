@@ -27,6 +27,16 @@
       position: fixed; bottom: 0; z-index: 10; touch-action: none;
     }
     #joystick-zone { left: 0; width: 45vw; height: 45vw; max-width: 220px; max-height: 220px; }
+    .joy-base {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: 116px; height: 116px; border-radius: 50%;
+      background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.4);
+    }
+    .joy-knob {
+      position: absolute; left: 50%; top: 50%; margin: -29px 0 0 -29px;
+      width: 58px; height: 58px; border-radius: 50%;
+      background: rgba(255,255,255,0.45);
+    }
 
     .btn {
       position: fixed; z-index: 11;
@@ -62,7 +72,6 @@
     <div class="btn small" id="b-map"   data-bit="256">MAP</div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.2/nipplejs.min.js"></script>
   <script>
     // --- Virtual-key bitmask shared with the C side (see port/main_sdl.c). ---
     // Bit values MUST match the TK_* enum there.
@@ -108,52 +117,60 @@
         el.addEventListener('pointerleave', up);
       });
 
-      // Virtual joystick -> direction bits (diagonals allowed via deadzone).
-      if (window.nipplejs) {
-        var joy = nipplejs.create({
-          zone: document.getElementById('joystick-zone'),
-          mode: 'static', position: { left: '50%', bottom: '50%' },
-          color: 'white', size: 120, restJoystick: true
-        });
-        joy.on('move', function (evt, data) {
-          var bits = touchBits & ~DIRS, dz = 0.4;
-          if (data && data.vector) {
-            var v = data.vector;
-            if (v.y >  dz) bits |= KEY.UP;
-            if (v.y < -dz) bits |= KEY.DOWN;
-            if (v.x < -dz) bits |= KEY.LEFT;
-            if (v.x >  dz) bits |= KEY.RIGHT;
-          }
-          touchBits = bits; pushKeys();
-        });
-        joy.on('end', function () { joyTouchId = null; touchBits &= ~DIRS; pushKeys(); });
-      }
-
-      // Robustly clear the d-pad when the joystick finger lifts. nipplejs can
-      // miss its 'end' event in multi-touch (e.g. lifting the joystick finger
-      // while a button is still held), leaving a direction latched ("wedged").
-      // So we track the joystick's own DOM touch id (the touch that started in
-      // the joystick zone) and clear the direction bits the instant THAT touch
-      // ends or is cancelled -- regardless of any other fingers still down.
+      // --- Custom touch joystick. ---
+      // We deliberately don't use a library here: nipplejs repeatedly dropped
+      // its end/cancel events in multi-touch (steering + tapping a button),
+      // leaving a direction latched ("wedged"). This tracks exactly one finger
+      // by its DOM touch id, so set/clear is fully deterministic.
       var zone = document.getElementById('joystick-zone');
-      zone.addEventListener('touchstart', function (e) {
-        if (e.changedTouches.length) joyTouchId = e.changedTouches[0].identifier;
-      }, { passive: true });
+      var base = document.createElement('div'); base.className = 'joy-base';
+      var knob = document.createElement('div'); knob.className = 'joy-knob';
+      zone.appendChild(base); base.appendChild(knob);
+      var cx = 0, cy = 0, radius = 58;
 
-      function clearAll() {
-        touchBits = 0;
-        document.querySelectorAll('.btn.pressed').forEach(function (el) { el.classList.remove('pressed'); });
-        pushKeys();
+      function joyFind(e) {
+        for (var i = 0; i < e.changedTouches.length; i++)
+          if (e.changedTouches[i].identifier === joyTouchId) return e.changedTouches[i];
+        return null;
       }
+      function joyApply(t) {
+        var dx = t.clientX - cx, dy = t.clientY - cy;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var k = dist > radius ? radius / dist : 1;          // clamp knob to base
+        knob.style.transform = 'translate(' + (dx * k) + 'px,' + (dy * k) + 'px)';
+        var dz = radius * 0.35, bits = touchBits & ~DIRS;   // per-axis deadzone -> 8-way
+        if (dx < -dz) bits |= KEY.LEFT;
+        if (dx >  dz) bits |= KEY.RIGHT;
+        if (dy < -dz) bits |= KEY.UP;
+        if (dy >  dz) bits |= KEY.DOWN;
+        touchBits = bits; pushKeys();
+      }
+      function joyReset() {
+        joyTouchId = null;
+        knob.style.transform = 'translate(0,0)';
+        touchBits &= ~DIRS; pushKeys();
+      }
+      zone.addEventListener('touchstart', function (e) {
+        if (joyTouchId !== null) return;                    // already tracking a finger
+        e.preventDefault();
+        var t = e.changedTouches[0];
+        joyTouchId = t.identifier;
+        var r = base.getBoundingClientRect();
+        cx = r.left + r.width / 2; cy = r.top + r.height / 2; radius = r.width / 2;
+        joyApply(t);
+      }, { passive: false });
+      zone.addEventListener('touchmove', function (e) {
+        var t = joyFind(e); if (!t) return;
+        e.preventDefault(); joyApply(t);
+      }, { passive: false });
+
       function onTouchEndOrCancel(e) {
-        if (joyTouchId !== null && e.changedTouches) {
-          for (var i = 0; i < e.changedTouches.length; i++) {
-            if (e.changedTouches[i].identifier === joyTouchId) {
-              joyTouchId = null; touchBits &= ~DIRS; pushKeys(); break;
-            }
-          }
+        if (joyTouchId !== null && joyFind(e)) joyReset();  // the joystick finger lifted
+        if (e.touches.length === 0) {                       // nothing held -> reset everything
+          touchBits = 0;
+          document.querySelectorAll('.btn.pressed').forEach(function (el) { el.classList.remove('pressed'); });
+          joyReset();
         }
-        if (e.touches.length === 0) clearAll();   // nothing held -> reset all
       }
       document.addEventListener('touchend', onTouchEndOrCancel, { passive: true });
       document.addEventListener('touchcancel', onTouchEndOrCancel, { passive: true });
