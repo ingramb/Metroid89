@@ -402,9 +402,11 @@ void error(char *txt)
 
 void pause()
 {
-	while(_rowread(ARROWS_ROW)&SEL_KEY);
-	while(!(_rowread(ARROWS_ROW)&SEL_KEY));
-	while(_rowread(ARROWS_ROW)&SEL_KEY);
+	// "Press to continue": accept SEL (2nd / shoot) or DMND (diamond / jump) so
+	// either action button works -- matches the touch overlay's SHOOT and JUMP.
+	while(_rowread(ARROWS_ROW)&(SEL_KEY|DMND_KEY)) PLATFORM_YIELD();
+	while(!(_rowread(ARROWS_ROW)&(SEL_KEY|DMND_KEY))) PLATFORM_YIELD();
+	while(_rowread(ARROWS_ROW)&(SEL_KEY|DMND_KEY)) PLATFORM_YIELD();
 	glbs->game_counter = 0;
 }
 
