@@ -732,6 +732,14 @@ void player_death()
 	decompress(glbs->samus_death_header, buffer);
 	decompress(glbs->samus_death_gfx, (void *)gfx);
 
+	// SPRITE_HEADER.offset is big-endian in the packed data; byte-swap the 7
+	// decompressed headers to host order (only .offset is multi-byte). Without
+	// this, frames with a non-trivial offset read the wrong gfx and corrupt.
+	for(i = 0 ; i < 7 ; i++) {
+		unsigned short o = hdr[i].offset;
+		hdr[i].offset = (unsigned short)((o >> 8) | (o << 8));
+	}
+
 	for(i = 0 ; i < 7 ; i++) {
 		orig_header = hdr + i;
 		flip_header = hdr + 7 + i;

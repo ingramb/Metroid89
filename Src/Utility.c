@@ -366,7 +366,9 @@ void platform_timer_tick(void)
 	if(++glbs_base->fps_counter >= platform_hz()) {
 		glbs_base->fps_counter = 0;
 		glbs_base->seconds++;
-		glbs_base->current_fps = glbs_base->frames;
+		// Shown as a 2-digit number; clamp so an uncapped frame rate can't make
+		// draw_number index past the font glyphs (out-of-bounds read).
+		glbs_base->current_fps = glbs_base->frames > 99 ? 99 : glbs_base->frames;
 		glbs_base->frames = 0;
 	}
 }

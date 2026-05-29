@@ -335,6 +335,24 @@ void enemy_init(ENEMY_HEADER *header, short number)
 			decompress(hdr_ptr, HeapDeref(enemy_gfx[i].buffer));
 			enemy_gfx[i].header = HLock(enemy_gfx[i].buffer) + 2;
 
+			// The enemy gfx archive is big-endian (built by the Windows
+			// SpriteMaker): byte-swap the frame count and each
+			// SPRITE_HEADER.offset to host order NOW -- skip_offset and the
+			// flip-frame generation below read these offsets, so swapping later
+			// (as the original did) leaves them big-endian on a LE host and
+			// corrupts every enemy with a non-zero extra_frame_skip (Chozo,
+			// Spikey, Ridley). The realloc below preserves these swapped bytes.
+			{
+				unsigned char *base = (unsigned char *)HeapDeref(enemy_gfx[i].buffer);
+				unsigned short fn = (unsigned short)((base[0] << 8) | base[1]);
+				short f;
+				enemy_gfx[i].frame_number = fn;
+				for(f = 0 ; f < (short)fn ; f++) {
+					unsigned short o = enemy_gfx[i].header[f].offset;
+					enemy_gfx[i].header[f].offset = (unsigned short)((o >> 8) | (o << 8));
+				}
+			}
+
 			skip_offset = 0;
 			if(enemy_data[i].extra_frame_skip != NO_EXTRA_FRAMES) {
 				hdr_size = hdr_size * 2 - sizeof(SPRITE_HEADER) * enemy_data[i].extra_frame_skip - 2;
@@ -360,19 +378,8 @@ void enemy_init(ENEMY_HEADER *header, short number)
 
 			decompress(gfx_ptr, enemy_gfx[i].gfx);
 
-			// The enemy gfx archive is big-endian (built by the Windows SpriteMaker):
-			// byte-swap the frame count and each SPRITE_HEADER.offset to host order
-			// before the (host-native) flip-frame generation below uses them.
-			{
-				unsigned short fn = *(unsigned short *)(HeapDeref(enemy_gfx[i].buffer));
-				short f;
-				fn = (unsigned short)((fn >> 8) | (fn << 8));
-				enemy_gfx[i].frame_number = fn;
-				for(f = 0 ; f < (short)fn ; f++) {
-					unsigned short o = enemy_gfx[i].header[f].offset;
-					enemy_gfx[i].header[f].offset = (unsigned short)((o >> 8) | (o << 8));
-				}
-			}
+			// (frame count + SPRITE_HEADER.offset were byte-swapped to host order
+			// above, right after the header decompress.)
 
 			if(enemy_data[i].extra_frame_skip != NO_EXTRA_FRAMES) {
 
