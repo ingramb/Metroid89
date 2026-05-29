@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "dllutility.h"
 #include "dllclipsprites.h"
+#include "bitops.h"   // big-endian 32-bit framebuffer access (LD32/ST32)
 
 /*void GraySpriteClip16_MASK(
 	short x, short y, short h, unsigned short* sprite1) {
@@ -48,8 +49,12 @@
 }*/
 
 void GraySpriteClip8_OR(short x, short y, short h, unsigned char* sprite1) {
-    register long            addr1   = (long)glbs->light_buffer;
-    register long            addr2   = (long)glbs->dark_buffer;
+    // The original wrote the framebuffer with `*(long*)` (32-bit big-endian on
+    // m68k). On a little-endian / 64-bit host that both reads the wrong byte
+    // order and clobbers 4 extra bytes, so route the word access through
+    // LD32/ST32 with a uint32 accumulator (matches the calculator exactly).
+    register unsigned char*  addr1   = (unsigned char*)glbs->light_buffer;
+    register unsigned char*  addr2   = (unsigned char*)glbs->dark_buffer;
     register unsigned char*  sprite2 = sprite1 + h;
     register unsigned char*  mask    = sprite2 + h;
     register long            offset;
@@ -78,11 +83,9 @@ void GraySpriteClip8_OR(short x, short y, short h, unsigned char* sprite1) {
     addr2  += offset;
 
     for (;h;h--,addr1+=30,addr2+=30) {
-			register long val = ~((long)(~(*mask++)&0xff)<<cnt);
-			*(long*)addr1&=val;
-			*(long*)addr1|=(long)(*sprite1++)<<cnt;
-			*(long*)addr2&=val;
-			*(long*)addr2|=(long)(*sprite2++)<<cnt;
+			unsigned long val = ~((unsigned long)(~(*mask++)&0xff)<<cnt);
+			ST32(addr1, (LD32(addr1) & val) | ((unsigned long)(*sprite1++)<<cnt));
+			ST32(addr2, (LD32(addr2) & val) | ((unsigned long)(*sprite2++)<<cnt));
 		}
 }
 
