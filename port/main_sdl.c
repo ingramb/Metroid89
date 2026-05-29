@@ -157,9 +157,15 @@ static void platform_clock_pump(void)
     static double accum = 0.0;
     double now = emscripten_get_now();
     double per = 1000.0 / platform_hz();
+    double dt;
     int guard = 0;
     if (last < 0.0) last = now;
-    accum += now - last;
+    dt = now - last;
+    // Cap dt so a long stall (backgrounded tab, OS suspend, debugger pause)
+    // can't make the game run in turbo when we resume. Without this the
+    // accumulator banks every missed ms and drains over many frames.
+    if (dt > 100.0) dt = 100.0;
+    accum += dt;
     last = now;
     while (accum >= per && guard++ < 240) {   // clamp catch-up after a long stall
         accum -= per;
