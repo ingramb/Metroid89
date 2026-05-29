@@ -70,6 +70,7 @@
                 MAP:0x100, BEAM:0x200, MISSILE:0x400 };
     var DIRS = KEY.UP | KEY.DOWN | KEY.LEFT | KEY.RIGHT;
     var touchBits = 0;
+    var joyTouchId = null;   // DOM touch id of the finger driving the joystick
     function pushKeys() {
       if (typeof Module !== 'undefined' && Module._touch_set_keys) Module._touch_set_keys(touchBits);
     }
@@ -125,27 +126,37 @@
           }
           touchBits = bits; pushKeys();
         });
-        joy.on('end', function () { touchBits &= ~DIRS; pushKeys(); });
+        joy.on('end', function () { joyTouchId = null; touchBits &= ~DIRS; pushKeys(); });
       }
 
-      // Safety net for stuck input. nipplejs can miss its 'end' event when a
-      // touch is *cancelled* (iOS reinterpreting a gesture, or a second touch
-      // disrupting tracking), leaving a direction bit stuck on. So: on any
-      // touchcancel drop the direction bits (the joystick re-asserts on the next
-      // move if still held), and whenever no fingers remain on screen, clear
-      // everything outright.
+      // Robustly clear the d-pad when the joystick finger lifts. nipplejs can
+      // miss its 'end' event in multi-touch (e.g. lifting the joystick finger
+      // while a button is still held), leaving a direction latched ("wedged").
+      // So we track the joystick's own DOM touch id (the touch that started in
+      // the joystick zone) and clear the direction bits the instant THAT touch
+      // ends or is cancelled -- regardless of any other fingers still down.
+      var zone = document.getElementById('joystick-zone');
+      zone.addEventListener('touchstart', function (e) {
+        if (e.changedTouches.length) joyTouchId = e.changedTouches[0].identifier;
+      }, { passive: true });
+
       function clearAll() {
         touchBits = 0;
         document.querySelectorAll('.btn.pressed').forEach(function (el) { el.classList.remove('pressed'); });
         pushKeys();
       }
-      document.addEventListener('touchcancel', function (e) {
-        if (e.touches.length === 0) clearAll();
-        else { touchBits &= ~DIRS; pushKeys(); }
-      }, { passive: true });
-      document.addEventListener('touchend', function (e) {
-        if (e.touches.length === 0) clearAll();
-      }, { passive: true });
+      function onTouchEndOrCancel(e) {
+        if (joyTouchId !== null && e.changedTouches) {
+          for (var i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === joyTouchId) {
+              joyTouchId = null; touchBits &= ~DIRS; pushKeys(); break;
+            }
+          }
+        }
+        if (e.touches.length === 0) clearAll();   // nothing held -> reset all
+      }
+      document.addEventListener('touchend', onTouchEndOrCancel, { passive: true });
+      document.addEventListener('touchcancel', onTouchEndOrCancel, { passive: true });
     }
     setupTouchControls();
   </script>
