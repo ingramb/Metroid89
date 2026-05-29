@@ -1,10 +1,15 @@
 # Build directories
 build/
 build-wasm/
+build-asan/
 
 # Generated at build time (mapconv emits these from Data/timdemo2.mmp)
 mtlevel.raw
 mtlevel1.raw
+
+# mapconv intermediates (temp<N>.bin / temp<N>.pck, in any dir)
+temp*.bin
+temp*.pck
 
 # Save games
 *.sav
