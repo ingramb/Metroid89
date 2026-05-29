@@ -151,26 +151,18 @@ void ti_persist_var(const char *name) {
     unsigned len;
     char path[1024];
     FILE *f;
-    WEB_DBG("tpv: enter");
-    if (!v) { WEB_DBG("tpv: no var"); return; }
+    if (!v) return;
     img = (unsigned char *)HeapDeref(v->sym.handle);
-    if (!img) { WEB_DBG("tpv: no img"); return; }
+    if (!img) return;
     len = (unsigned)(img[0] | (img[1] << 8));   // data length (host-native u16)
     snprintf(path, sizeof(path), "%s/%s.sav", SAVE_DIR, name);
     f = fopen(path, "wb");
-    if (!f) { WEB_DBG("tpv: fopen fail"); return; }
+    if (!f) return;
     fwrite(img, 1, len + 2, f);                 // size prefix + data
     fclose(f);
-    WEB_DBG("tpv: wrote syncing");
 #ifdef __EMSCRIPTEN__
     // Flush the IDBFS mount to IndexedDB so the save survives a page reload.
-    EM_ASM({
-        FS.syncfs(false, function(err){
-            var el = document.getElementById('savedbg');
-            if (err) { console.error('syncfs save:', err); if (el) el.textContent = 'save: ERR'; }
-            else if (el) { el.textContent = 'save: ok ' + Date.now(); }
-        });
-    });
+    EM_ASM({ FS.syncfs(false, function(err){ if (err) console.error('syncfs save:', err); }); });
 #endif
 }
 
@@ -264,8 +256,6 @@ SYM_ENTRY *DerefSym(HSym h) {
     if (h.folder == 0 || h.folder > (unsigned short)g_nvars) return 0;
     return &g_vars[h.folder - 1].sym;
 }
-
-int ti_debug_nvars(void) { return g_nvars; }   // DEBUG
 
 void ti_unlock_file(const char *name) {
     SYM_ENTRY *e = SymFindPtr(name, 0);

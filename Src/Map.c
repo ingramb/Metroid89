@@ -829,7 +829,6 @@ void check_special()
 					menu_add_choice(m, 81, 48, BUTTON_DISABLE, "NO");
 					menu_process(m, glbs->font);
 					load_metgame();
-					WEB_DBG(m->selected == 0 ? "station: YES" : "station: NO");
 					if(m->selected == 0) {
 						glbs->special.save.saving = TRUE;
 						glbs->special.save.counter = 120;
@@ -1651,15 +1650,9 @@ char game_save()
 	//unsigned short compressed_size[zone_number];
 	//HANDLE compressed_data[zone_number];
 
-	WEB_DBG("gs: enter");
 	sym_ptr = DerefSym(SymAdd(SYMSTR(game_name)));
 
-	if(sym_ptr == NULL) {
-#ifdef __EMSCRIPTEN__
-		{ char b[96]; snprintf(b, sizeof(b), "nosym nv=%d nm=[%s]", ti_debug_nvars(), game_name); WEB_DBG(b); }
-#endif
-		return FALSE;
-	}
+	if(sym_ptr == NULL) return FALSE;
 
 	size = 2 + (2 * sizeof(SAVE_GAME)) + (screen_number / 4 + 1) + 7;
 	sym_ptr->handle = HeapAlloc(size);// + 2 * zone_number);
@@ -1730,7 +1723,6 @@ char game_save()
 
 	// Native port: the save "variable" lives in RAM; persist it to disk so it
 	// survives exit/restart (and shows up in the title save-slot menu).
-	WEB_DBG("gs: ->persist");
 	ti_persist_var(SYMSTR(game_name));
 
 	return TRUE;

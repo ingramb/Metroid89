@@ -24,11 +24,8 @@
 #ifdef __EMSCRIPTEN__
 void platform_yield(void);
 #define PLATFORM_YIELD() platform_yield()
-void web_dbg(const char *s);   /* DEBUG: show a literal string in the corner readout */
-#define WEB_DBG(s) web_dbg(s)
 #else
 #define PLATFORM_YIELD() ((void)0)
-#define WEB_DBG(s) ((void)0)
 #endif
 
 // ---------------------------------------------------------------------------
@@ -100,7 +97,6 @@ HSym       SymFind(const char *name);
 SYM_ENTRY *SymFindPtr(const char *name, short flags);
 HSym       SymAdd(const char *name);
 SYM_ENTRY *DerefSym(HSym h);
-int        ti_debug_nvars(void);   /* DEBUG: current registered-variable count */
 void      *HLock(HANDLE h);
 void       ti_unlock_file(const char *name);   // null-safe HeapUnlock by name
 void       ti_persist_var(const char *name);   // write a (save) variable to disk

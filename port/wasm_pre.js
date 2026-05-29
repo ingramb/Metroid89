@@ -16,12 +16,6 @@ Module["preRun"].push(function () {
   addRunDependency("idbfs-load");
   FS.syncfs(true, function (err) {
     if (err) console.error("syncfs load:", err);
-    // DEBUG: report what was loaded from IndexedDB into /saves.
-    try {
-      var list = FS.readdir("/saves").filter(function (n) { return n !== "." && n !== ".."; });
-      var el = document.getElementById("savedbg");
-      if (el) el.textContent = "load: " + (list.length ? list.join(",") : "(none)") + (err ? " ERR" : "");
-    } catch (e) {}
     removeRunDependency("idbfs-load");
   });
 
