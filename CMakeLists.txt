@@ -122,10 +122,14 @@ if(EMSCRIPTEN)
         # Persistent save games: IDBFS mounted at /saves (see port/wasm_pre.js).
         -lidbfs.js
         "SHELL:--pre-js ${CMAKE_SOURCE_DIR}/port/wasm_pre.js"
+        # Custom page shell: canvas + on-screen touch controls (nipplejs joystick
+        # and buttons that drive touch_set_keys() in port/main_sdl.c).
+        "SHELL:--shell-file ${CMAKE_SOURCE_DIR}/port/shell.html"
         ${PRELOAD_ARGS})
-    # Relink when the pre-js changes.
+    # Relink when the pre-js / shell change.
     set_property(TARGET metroid89 APPEND PROPERTY LINK_DEPENDS
-        ${CMAKE_SOURCE_DIR}/port/wasm_pre.js)
+        ${CMAKE_SOURCE_DIR}/port/wasm_pre.js
+        ${CMAKE_SOURCE_DIR}/port/shell.html)
     # Emit directly into docs/ as index.{html,js,wasm,data} so the repo's docs/
     # folder is a ready-to-publish GitHub Pages site (Settings -> Pages -> docs).
     # emcc writes the .js/.wasm/.data sidecars next to the .html output.

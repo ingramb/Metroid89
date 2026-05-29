@@ -195,6 +195,21 @@ static Uint32 timer_cb(Uint32 interval, void *param)
     return interval;
 }
 
+#ifdef __EMSCRIPTEN__
+// On-screen touch controls (mobile). The HTML shell (port/shell.html) maintains
+// a bitmask of held virtual buttons and pushes it here via Module._touch_set_keys;
+// _rowread() then ORs the relevant bits into the matrix rows the game polls. The
+// low bits intentionally match the ARROWS_ROW layout so they can be masked in
+// directly. Keep these values in sync with the constants in shell.html.
+enum {
+    TK_UP = 1, TK_LEFT = 2, TK_DOWN = 4, TK_RIGHT = 8,  // ARROWS_ROW bits
+    TK_SHOOT = 16, TK_JUMP = 64,                         // SEL, DMND (same row)
+    TK_MAP = 0x100, TK_BEAM = 0x200, TK_MISSILE = 0x400  // other rows (see below)
+};
+static unsigned g_touch = 0;
+EMSCRIPTEN_KEEPALIVE void touch_set_keys(unsigned mask) { g_touch = mask; }
+#endif
+
 short _rowread(short mask)
 {
     const Uint8 *k;
@@ -248,6 +263,9 @@ short _rowread(short mask)
         if (k[SDL_SCANCODE_Z])      r |= 16;   // SEL_KEY  (2nd / shoot)
         if (k[SDL_SCANCODE_LSHIFT] || k[SDL_SCANCODE_RSHIFT]) r |= 32; // SHIFT (cheat)
         if (k[SDL_SCANCODE_SPACE])  r |= 64;   // DMND_KEY (diamond / jump)
+#ifdef __EMSCRIPTEN__
+        r |= (short)(g_touch & (TK_UP|TK_LEFT|TK_DOWN|TK_RIGHT|TK_SHOOT|TK_JUMP));
+#endif
     }
     // ESC_ROW (0xffbf, bit6). Closing the window (SDL_QUIT) also returns ESC so
     // the game loop exits cleanly and game_save() runs. METROID89_AUTOQUIT=<ms>
@@ -261,9 +279,18 @@ short _rowread(short mask)
     if (!(row & 0x0020)) {
         if (k[SDL_SCANCODE_A] || k[SDL_SCANCODE_TAB]) r |= 1;   // APPS_KEY
         if (k[SDL_SCANCODE_F1]) r |= 128;                       // beam
+#ifdef __EMSCRIPTEN__
+        if (g_touch & TK_MAP)  r |= 1;
+        if (g_touch & TK_BEAM) r |= 128;
+#endif
     }
     // 0xffef bit4: F2 (missile) at bit7
-    if (!(row & 0x0010)) { if (k[SDL_SCANCODE_F2]) r |= 128; }
+    if (!(row & 0x0010)) {
+        if (k[SDL_SCANCODE_F2]) r |= 128;
+#ifdef __EMSCRIPTEN__
+        if (g_touch & TK_MISSILE) r |= 128;
+#endif
+    }
     // 0xfff7 bit3: F3 (super missile) at bit7
     if (!(row & 0x0008)) { if (k[SDL_SCANCODE_F3]) r |= 128; }
     // 0xfffb bit2 (BSPACE_ROW): diag-up=bit6, F4 (power bomb)=bit7

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Metroid 89</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      background: #000; color: #ccc;
+      font-family: -apple-system, system-ui, sans-serif;
+      overflow: hidden; touch-action: none; user-select: none;
+      -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+    }
+    #canvas {
+      display: block; margin: 0 auto;
+      width: 100vw; max-width: 880px; aspect-ratio: 8 / 5; height: auto;
+      background: #000;
+      image-rendering: pixelated; image-rendering: crisp-edges;
+    }
+    #status { text-align: center; font-size: 14px; padding: 8px; }
+
+    /* On-screen controls: hidden unless this is a touch device (set in JS). */
+    #controls { display: none; }
+    #controls .ctl, #joystick-zone {
+      position: fixed; bottom: 0; z-index: 10; touch-action: none;
+    }
+    #joystick-zone { left: 0; width: 45vw; height: 45vw; max-width: 220px; max-height: 220px; }
+
+    .btn {
+      position: fixed; z-index: 11;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12); border: 2px solid rgba(255,255,255,0.45);
+      color: #fff; font-weight: 700; touch-action: none; user-select: none;
+    }
+    .btn.pressed { background: rgba(255,255,255,0.45); }
+    .btn.big   { width: 84px;  height: 84px;  font-size: 15px; }
+    .btn.small { width: 60px;  height: 60px;  font-size: 12px; }
+
+    /* Right-hand action cluster. */
+    #b-jump  { right: 24px;  bottom: 28px; }
+    #b-shoot { right: 118px; bottom: 60px; }
+    #b-miss  { right: 36px;  bottom: 124px; }
+    /* Top utility buttons. */
+    #b-beam  { right: 16px;  top: 16px; }
+    #b-map   { right: 84px;  top: 16px; }
+  </style>
+</head>
+<body>
+  <div id="status">Loading…</div>
+  <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+
+  <div id="controls">
+    <div id="joystick-zone"></div>
+    <div class="btn big"   id="b-jump"  data-bit="64">JUMP</div>
+    <div class="btn big"   id="b-shoot" data-bit="16">SHOOT</div>
+    <div class="btn small" id="b-miss"  data-bit="1024">MISL</div>
+    <div class="btn small" id="b-beam"  data-bit="512">BEAM</div>
+    <div class="btn small" id="b-map"   data-bit="256">MAP</div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.2/nipplejs.min.js"></script>
+  <script>
+    // --- Virtual-key bitmask shared with the C side (see port/main_sdl.c). ---
+    // Bit values MUST match the TK_* enum there.
+    var KEY = { UP:1, LEFT:2, DOWN:4, RIGHT:8, SHOOT:16, JUMP:64,
+                MAP:0x100, BEAM:0x200, MISSILE:0x400 };
+    var DIRS = KEY.UP | KEY.DOWN | KEY.LEFT | KEY.RIGHT;
+    var touchBits = 0;
+    function pushKeys() {
+      if (Module && Module._touch_set_keys) Module._touch_set_keys(touchBits);
+    }
+
+    // --- Emscripten Module (defined before the generated script loads, so the
+    //     IDBFS preRun in wasm_pre.js can attach to Module.preRun). ---
+    var statusEl = document.getElementById('status');
+    var Module = {
+      canvas: document.getElementById('canvas'),
+      print: function (t) { console.log(t); },
+      printErr: function (t) { console.error(t); },
+      setStatus: function (t) { statusEl.textContent = t; if (t === '') statusEl.style.display = 'none'; },
+      totalDependencies: 0,
+      monitorRunDependencies: function (left) {
+        this.totalDependencies = Math.max(this.totalDependencies, left);
+        this.setStatus(left ? 'Loading… (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'Running');
+      }
+    };
+    Module.setStatus('Loading…');
+    window.onerror = function () { Module.setStatus('Error — see console.'); };
+
+    // --- Touch controls: only shown on touch ("coarse pointer") devices. ---
+    function setupTouchControls() {
+      if (!window.matchMedia || !window.matchMedia('(pointer: coarse)').matches) return;
+      document.getElementById('controls').style.display = 'block';
+
+      // Action buttons (pointer events cover touch + mouse).
+      document.querySelectorAll('.btn').forEach(function (el) {
+        var bit = parseInt(el.getAttribute('data-bit'), 10);
+        var down = function (e) { e.preventDefault(); touchBits |= bit;  el.classList.add('pressed');    pushKeys(); };
+        var up   = function (e) { e.preventDefault(); touchBits &= ~bit; el.classList.remove('pressed'); pushKeys(); };
+        el.addEventListener('pointerdown', down);
+        el.addEventListener('pointerup', up);
+        el.addEventListener('pointercancel', up);
+        el.addEventListener('pointerleave', up);
+      });
+
+      // Virtual joystick -> direction bits (diagonals allowed via deadzone).
+      if (window.nipplejs) {
+        var joy = nipplejs.create({
+          zone: document.getElementById('joystick-zone'),
+          mode: 'static', position: { left: '50%', bottom: '50%' },
+          color: 'white', size: 120, restJoystick: true
+        });
+        joy.on('move', function (evt, data) {
+          var bits = touchBits & ~DIRS, dz = 0.4;
+          if (data && data.vector) {
+            var v = data.vector;
+            if (v.y >  dz) bits |= KEY.UP;
+            if (v.y < -dz) bits |= KEY.DOWN;
+            if (v.x < -dz) bits |= KEY.LEFT;
+            if (v.x >  dz) bits |= KEY.RIGHT;
+          }
+          touchBits = bits; pushKeys();
+        });
+        joy.on('end', function () { touchBits &= ~DIRS; pushKeys(); });
+      }
+    }
+    setupTouchControls();
+  </script>
+  {{{ SCRIPT }}}
+</body>
+</html>
