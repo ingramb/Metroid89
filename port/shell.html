@@ -50,7 +50,6 @@
 </head>
 <body>
   <div id="status">Loading…</div>
-  <div id="dbg" style="position:fixed;top:0;left:0;z-index:99;font:12px monospace;color:#0f0;background:rgba(0,0,0,.6);padding:2px 5px;pointer-events:none;">dbg</div>
   <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 
   <div id="controls">
@@ -70,19 +69,9 @@
                 MAP:0x100, BEAM:0x200, MISSILE:0x400 };
     var DIRS = KEY.UP | KEY.DOWN | KEY.LEFT | KEY.RIGHT;
     var touchBits = 0;
-    var dbgEl = document.getElementById('dbg');
     function pushKeys() {
-      var fn = (typeof Module !== 'undefined' && Module._touch_set_keys);
-      if (fn) Module._touch_set_keys(touchBits);
-      // DEBUG readout: js = bitmask JS thinks is held, fn = setter bound?,
-      // c = value the C side actually reports back. Lets us see where the
-      // touch->game chain breaks on a real device.
-      if (dbgEl) {
-        var cval = (typeof Module !== 'undefined' && Module._touch_get_keys) ? Module._touch_get_keys() : '?';
-        dbgEl.textContent = 'js:' + touchBits + ' fn:' + (fn ? 'Y' : 'N') + ' c:' + cval;
-      }
+      if (typeof Module !== 'undefined' && Module._touch_set_keys) Module._touch_set_keys(touchBits);
     }
-    setInterval(pushKeys, 250);   // keep the readout fresh even without input
 
     // --- Emscripten Module (defined before the generated script loads, so the
     //     IDBFS preRun in wasm_pre.js can attach to Module.preRun). ---
@@ -137,6 +126,25 @@
         });
         joy.on('end', function () { touchBits &= ~DIRS; pushKeys(); });
       }
+
+      // Safety net for stuck input. nipplejs can miss its 'end' event when a
+      // touch is *cancelled* (iOS reinterpreting a gesture, or a second touch
+      // disrupting tracking), leaving a direction bit stuck on. So: on any
+      // touchcancel drop the direction bits (the joystick re-asserts on the next
+      // move if still held), and whenever no fingers remain on screen, clear
+      // everything outright.
+      function clearAll() {
+        touchBits = 0;
+        document.querySelectorAll('.btn.pressed').forEach(function (el) { el.classList.remove('pressed'); });
+        pushKeys();
+      }
+      document.addEventListener('touchcancel', function (e) {
+        if (e.touches.length === 0) clearAll();
+        else { touchBits &= ~DIRS; pushKeys(); }
+      }, { passive: true });
+      document.addEventListener('touchend', function (e) {
+        if (e.touches.length === 0) clearAll();
+      }, { passive: true });
     }
     setupTouchControls();
   </script>

@@ -208,7 +208,6 @@ enum {
 };
 static volatile unsigned g_touch = 0;
 EMSCRIPTEN_KEEPALIVE void touch_set_keys(unsigned mask) { g_touch = mask; }
-EMSCRIPTEN_KEEPALIVE unsigned touch_get_keys(void) { return g_touch; }  // debug readback
 #endif
 
 short _rowread(short mask)
