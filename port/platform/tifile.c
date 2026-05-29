@@ -265,6 +265,8 @@ SYM_ENTRY *DerefSym(HSym h) {
     return &g_vars[h.folder - 1].sym;
 }
 
+int ti_debug_nvars(void) { return g_nvars; }   // DEBUG
+
 void ti_unlock_file(const char *name) {
     SYM_ENTRY *e = SymFindPtr(name, 0);
     if (e) HeapUnlock(e->handle);

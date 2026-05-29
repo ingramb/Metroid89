@@ -100,6 +100,7 @@ HSym       SymFind(const char *name);
 SYM_ENTRY *SymFindPtr(const char *name, short flags);
 HSym       SymAdd(const char *name);
 SYM_ENTRY *DerefSym(HSym h);
+int        ti_debug_nvars(void);   /* DEBUG: current registered-variable count */
 void      *HLock(HANDLE h);
 void       ti_unlock_file(const char *name);   // null-safe HeapUnlock by name
 void       ti_persist_var(const char *name);   // write a (save) variable to disk

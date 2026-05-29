@@ -1654,7 +1654,12 @@ char game_save()
 	WEB_DBG("gs: enter");
 	sym_ptr = DerefSym(SymAdd(SYMSTR(game_name)));
 
-	if(sym_ptr == NULL) { WEB_DBG("gs: no sym"); return FALSE; }
+	if(sym_ptr == NULL) {
+#ifdef __EMSCRIPTEN__
+		{ char b[96]; snprintf(b, sizeof(b), "nosym nv=%d nm=[%s]", ti_debug_nvars(), game_name); WEB_DBG(b); }
+#endif
+		return FALSE;
+	}
 
 	size = 2 + (2 * sizeof(SAVE_GAME)) + (screen_number / 4 + 1) + 7;
 	sym_ptr->handle = HeapAlloc(size);// + 2 * zone_number);
