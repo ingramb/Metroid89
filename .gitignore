@@ -1,4 +1,14 @@
+# Build directories
 build/
+build-wasm/
+
+# Generated at build time (mapconv emits these from Data/timdemo2.mmp)
 mtlevel.raw
 mtlevel1.raw
+
+# Save games
 *.sav
+
+# macOS
+.DS_Store
+**/.DS_Store
