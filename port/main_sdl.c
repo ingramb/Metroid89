@@ -206,8 +206,9 @@ enum {
     TK_SHOOT = 16, TK_JUMP = 64,                         // SEL, DMND (same row)
     TK_MAP = 0x100, TK_BEAM = 0x200, TK_MISSILE = 0x400  // other rows (see below)
 };
-static unsigned g_touch = 0;
+static volatile unsigned g_touch = 0;
 EMSCRIPTEN_KEEPALIVE void touch_set_keys(unsigned mask) { g_touch = mask; }
+EMSCRIPTEN_KEEPALIVE unsigned touch_get_keys(void) { return g_touch; }  // debug readback
 #endif
 
 short _rowread(short mask)

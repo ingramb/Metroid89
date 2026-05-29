@@ -50,6 +50,7 @@
 </head>
 <body>
   <div id="status">Loading…</div>
+  <div id="dbg" style="position:fixed;top:0;left:0;z-index:99;font:12px monospace;color:#0f0;background:rgba(0,0,0,.6);padding:2px 5px;pointer-events:none;">dbg</div>
   <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
 
   <div id="controls">
@@ -69,9 +70,19 @@
                 MAP:0x100, BEAM:0x200, MISSILE:0x400 };
     var DIRS = KEY.UP | KEY.DOWN | KEY.LEFT | KEY.RIGHT;
     var touchBits = 0;
+    var dbgEl = document.getElementById('dbg');
     function pushKeys() {
-      if (Module && Module._touch_set_keys) Module._touch_set_keys(touchBits);
+      var fn = (typeof Module !== 'undefined' && Module._touch_set_keys);
+      if (fn) Module._touch_set_keys(touchBits);
+      // DEBUG readout: js = bitmask JS thinks is held, fn = setter bound?,
+      // c = value the C side actually reports back. Lets us see where the
+      // touch->game chain breaks on a real device.
+      if (dbgEl) {
+        var cval = (typeof Module !== 'undefined' && Module._touch_get_keys) ? Module._touch_get_keys() : '?';
+        dbgEl.textContent = 'js:' + touchBits + ' fn:' + (fn ? 'Y' : 'N') + ' c:' + cval;
+      }
     }
+    setInterval(pushKeys, 250);   // keep the readout fresh even without input
 
     // --- Emscripten Module (defined before the generated script loads, so the
     //     IDBFS preRun in wasm_pre.js can attach to Module.preRun). ---
