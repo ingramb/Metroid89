@@ -144,6 +144,13 @@ static void register_sav_file(const char *path, const char *varname) {
     v->used = 1;
 }
 
+// DEBUG: show a stage marker in the on-screen readout (no-op on native).
+#ifdef __EMSCRIPTEN__
+#define SAVEDBG(lit) EM_ASM({ var el=document.getElementById("savedbg"); if(el) el.textContent=lit; })
+#else
+#define SAVEDBG(lit) ((void)0)
+#endif
+
 // Persist a variable's heap image (2-byte size prefix + data) to <name>.sav.
 void ti_persist_var(const char *name) {
     Var *v = var_find(name);
@@ -151,15 +158,17 @@ void ti_persist_var(const char *name) {
     unsigned len;
     char path[1024];
     FILE *f;
-    if (!v) return;
+    SAVEDBG("tpv: enter");
+    if (!v) { SAVEDBG("tpv: no var"); return; }
     img = (unsigned char *)HeapDeref(v->sym.handle);
-    if (!img) return;
+    if (!img) { SAVEDBG("tpv: no img"); return; }
     len = (unsigned)(img[0] | (img[1] << 8));   // data length (host-native u16)
     snprintf(path, sizeof(path), "%s/%s.sav", SAVE_DIR, name);
     f = fopen(path, "wb");
-    if (!f) return;
+    if (!f) { SAVEDBG("tpv: fopen fail"); return; }
     fwrite(img, 1, len + 2, f);                 // size prefix + data
     fclose(f);
+    SAVEDBG("tpv: wrote syncing");
 #ifdef __EMSCRIPTEN__
     // Flush the IDBFS mount to IndexedDB so the save survives a page reload.
     EM_ASM({
