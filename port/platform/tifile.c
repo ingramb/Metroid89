@@ -162,7 +162,13 @@ void ti_persist_var(const char *name) {
     fclose(f);
 #ifdef __EMSCRIPTEN__
     // Flush the IDBFS mount to IndexedDB so the save survives a page reload.
-    EM_ASM({ FS.syncfs(false, function(err){ if (err) console.error('syncfs save:', err); }); });
+    EM_ASM({
+        FS.syncfs(false, function(err){
+            var el = document.getElementById('savedbg');
+            if (err) { console.error('syncfs save:', err); if (el) el.textContent = 'save: ERR'; }
+            else if (el) { el.textContent = 'save: ok ' + Date.now(); }
+        });
+    });
 #endif
 }
 
