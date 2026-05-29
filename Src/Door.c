@@ -271,7 +271,7 @@ void fade(short b, uint32_t *light, uint32_t *dark, DOOR *door, char draw_player
 		player_draw();
 	} else bar_draw();
 	update_screen();
-	while(glbs->timer);
+	while(glbs->timer) PLATFORM_YIELD();
 }
 
 void fade_out(uint32_t *light, uint32_t *dark, DOOR *door)

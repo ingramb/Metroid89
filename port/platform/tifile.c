@@ -19,6 +19,17 @@
 #define DATA_DIR "."
 #endif
 
+// Where save-game (.sav) files live. Natively that's the data dir alongside the
+// game files. In the browser the data dir is a read-only preloaded MEMFS that is
+// wiped on reload, so saves go to /saves, an IDBFS mount backed by IndexedDB
+// (set up in port/wasm_pre.js and flushed by ti_persist_var below).
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#define SAVE_DIR "/saves"
+#else
+#define SAVE_DIR DATA_DIR
+#endif
+
 typedef struct {
     char           name[16];
     unsigned char *buf;       // whole file image (owned)
@@ -144,11 +155,15 @@ void ti_persist_var(const char *name) {
     img = (unsigned char *)HeapDeref(v->sym.handle);
     if (!img) return;
     len = (unsigned)(img[0] | (img[1] << 8));   // data length (host-native u16)
-    snprintf(path, sizeof(path), "%s/%s.sav", DATA_DIR, name);
+    snprintf(path, sizeof(path), "%s/%s.sav", SAVE_DIR, name);
     f = fopen(path, "wb");
     if (!f) return;
     fwrite(img, 1, len + 2, f);                 // size prefix + data
     fclose(f);
+#ifdef __EMSCRIPTEN__
+    // Flush the IDBFS mount to IndexedDB so the save survives a page reload.
+    EM_ASM({ FS.syncfs(false, function(err){ if (err) console.error('syncfs save:', err); }); });
+#endif
 }
 
 static void ensure_loaded(void) {
@@ -156,21 +171,28 @@ static void ensure_loaded(void) {
     struct dirent *e;
     if (g_loaded) return;
     g_loaded = 1;
-    d = opendir(DATA_DIR);
-    if (!d) { fprintf(stderr, "tifile: cannot open data dir '%s'\n", DATA_DIR); return; }
-    // Pass 0: persisted save variables.
-    while ((e = readdir(d))) {
-        const char *dot = strrchr(e->d_name, '.');
-        if (dot && strcmp(dot, ".sav") == 0) {
-            char path[1024], var[16];
-            int n = (int)(dot - e->d_name);
-            if (n >= (int)sizeof(var)) n = sizeof(var) - 1;
-            memcpy(var, e->d_name, n); var[n] = 0;
-            snprintf(path, sizeof(path), "%s/%s", DATA_DIR, e->d_name);
-            register_sav_file(path, var);
+    // Pass 0: persisted save variables (from SAVE_DIR, which differs from the
+    // read-only data dir on the WASM build). Loaded first so they take
+    // precedence over the bundled .89y/.89z below (var_find skips duplicates).
+    {
+        DIR *sd = opendir(SAVE_DIR);
+        if (sd) {
+            while ((e = readdir(sd))) {
+                const char *dot = strrchr(e->d_name, '.');
+                if (dot && strcmp(dot, ".sav") == 0) {
+                    char path[1024], var[16];
+                    int n = (int)(dot - e->d_name);
+                    if (n >= (int)sizeof(var)) n = sizeof(var) - 1;
+                    memcpy(var, e->d_name, n); var[n] = 0;
+                    snprintf(path, sizeof(path), "%s/%s", SAVE_DIR, e->d_name);
+                    register_sav_file(path, var);
+                }
+            }
+            closedir(sd);
         }
     }
-    rewinddir(d);
+    d = opendir(DATA_DIR);
+    if (!d) { fprintf(stderr, "tifile: cannot open data dir '%s'\n", DATA_DIR); return; }
     // Pass 1: native .raw blobs take precedence (e.g. mtlevel.raw over timdemo2.89y).
     while ((e = readdir(d))) {
         const char *dot = strrchr(e->d_name, '.');

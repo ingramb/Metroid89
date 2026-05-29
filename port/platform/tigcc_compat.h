@@ -12,6 +12,23 @@
 #include "screen.h"
 
 // ---------------------------------------------------------------------------
+// Cooperative yield for the WebAssembly build.
+//
+// Natively the game clock runs on a background SDL timer thread and the game's
+// busy-wait loops (delay(), fades, the main loop) spin freely. In the browser
+// there are no threads on the main thread: we compile with ASYNCIFY and run
+// everything on the main thread, so every busy-wait must hand control back to
+// the browser event loop. platform_yield() pumps the wall-clock game timer and
+// yields. On native it is a no-op. (Defined in port/main_sdl.c.)
+// ---------------------------------------------------------------------------
+#ifdef __EMSCRIPTEN__
+void platform_yield(void);
+#define PLATFORM_YIELD() platform_yield()
+#else
+#define PLATFORM_YIELD() ((void)0)
+#endif
+
+// ---------------------------------------------------------------------------
 // Basic constants the calculator headers assumed from tigcclib
 // ---------------------------------------------------------------------------
 #ifndef TRUE

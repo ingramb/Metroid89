@@ -759,7 +759,7 @@ void player_death()
 	screen_draw();
 	memcpy(light, glbs->light_buffer, LCD_SIZE);
 	memcpy(dark, glbs->dark_buffer, LCD_SIZE);
-	fade_out_player((long *)light, (long *)dark);
+	fade_out_player((uint32_t *)light, (uint32_t *)dark);
 
 	while(glbs->player.e.x - glbs->camera.x != 64 && glbs->player.e.y - glbs->camera.y != 26) {
 		if(glbs->player.e.x - glbs->camera.x != 64) {
@@ -798,7 +798,7 @@ void player_death()
 		else if(a >= 30 && a < 42 && a % 2) i++;
 		if(a >= 38) f++;
 
-		while(glbs->timer);
+		while(glbs->timer) PLATFORM_YIELD();
 	}
 
 	free(buffer);

@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 #include "platform/screen.h"
 
 #define SCALE 4
@@ -47,7 +51,12 @@ int screen_init(void)
         SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
     if (!g_texture) { fprintf(stderr, "CreateTexture: %s\n", SDL_GetError()); return 0; }
 
+#ifndef __EMSCRIPTEN__
+    // Native: a background SDL timer thread ticks the game clock. In the WASM
+    // build there are no threads on the main thread; the clock is driven from
+    // platform_yield() off the wall clock instead (see below).
     SDL_AddTimer(1000 / platform_hz(), timer_cb, NULL);   // game clock (~100 Hz)
+#endif
 
     return 1;
 }
@@ -138,6 +147,36 @@ int platform_should_quit(void) { return g_should_quit; }
 // busy-wait loops depend on actually decrements.
 extern void platform_timer_tick(void);
 
+#ifdef __EMSCRIPTEN__
+// WASM build: single-threaded on the browser main thread, compiled with
+// ASYNCIFY. There is no timer thread, so advance the game clock here from the
+// real wall clock, calling platform_timer_tick() once per 1000/hz ms elapsed.
+static void platform_clock_pump(void)
+{
+    static double last = -1.0;
+    static double accum = 0.0;
+    double now = emscripten_get_now();
+    double per = 1000.0 / platform_hz();
+    int guard = 0;
+    if (last < 0.0) last = now;
+    accum += now - last;
+    last = now;
+    while (accum >= per && guard++ < 240) {   // clamp catch-up after a long stall
+        accum -= per;
+        platform_timer_tick();
+    }
+}
+
+// The yield primitive every busy-wait loop calls: advance the clock, then hand
+// control to the browser (ASYNCIFY unwinds/rewinds the C stack) so it can
+// repaint and deliver input events.
+void platform_yield(void)
+{
+    platform_clock_pump();
+    emscripten_sleep(0);
+}
+#endif
+
 // Game-clock frequency. The calculator drove logic off its programmable timer
 // (~80 Hz here); tunable via METROID89_HZ.
 int platform_hz(void)
@@ -161,6 +200,19 @@ short _rowread(short mask)
     const Uint8 *k;
     unsigned short row = (unsigned short)mask;   // active-low: cleared bit = selected
     short r = 0;
+#ifdef __EMSCRIPTEN__
+    // _rowread is the game's universal input poll and is the body of many tight
+    // wait-for-key spins (pause(), key-release waits) that never reach
+    // update_screen. Those spins need a yield to make progress, but normal-frame
+    // logic also calls _rowread dozens of times and must NOT yield each time (a
+    // single emscripten_sleep already burns the browser's ~4 ms setTimeout floor,
+    // so a wall-clock throttle defeats itself). Throttle by call count instead:
+    // tight spins reach the threshold quickly, per-frame logic almost never does.
+    {
+        static unsigned calls = 0;
+        if (++calls >= 256) { calls = 0; platform_clock_pump(); emscripten_sleep(0); }
+    }
+#endif
     platform_pump();
     k = SDL_GetKeyboardState(NULL);
 

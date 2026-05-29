@@ -343,6 +343,9 @@ void update_screen()
 {
 	screen_present(glbs->light_buffer, glbs->dark_buffer);
 	glbs->frames++;
+	// WASM: every frame is a chance to let the browser repaint/deliver input.
+	// This covers the main loop and every loop that draws (door fades, menus).
+	PLATFORM_YIELD();
 }
 
 // Emulates the calculator's periodic auto-interrupt (~70 Hz). Driven by an SDL
@@ -408,6 +411,6 @@ void pause()
 void delay(short a)
 {
 	glbs->timer = a;
-	while(glbs->timer);
+	while(glbs->timer) PLATFORM_YIELD();
 }
 

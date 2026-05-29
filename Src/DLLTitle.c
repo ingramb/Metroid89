@@ -174,7 +174,7 @@ char title_screen(char *game, void *func0, void *func1)
 		glbs->timer = 50;
 		draw_samus_select(22 + 24 * m->selected, i);
 		update_screen();
-		while(glbs->timer > 0) continue;
+		while(glbs->timer > 0) PLATFORM_YIELD();
 	}
 
 	flipping_on();
