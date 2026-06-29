@@ -56,6 +56,9 @@
     /* Top utility buttons. */
     #b-beam  { right: 16px;  top: 16px; }
     #b-map   { right: 84px;  top: 16px; }
+    /* Cheat: held, fills HP / unlocks items. Tucked top-left so it's not in the
+       way during normal play, and made dim so taps are deliberate. */
+    #b-cheat { left: 16px;   top: 16px; opacity: 0.55; }
   </style>
 </head>
 <body>
@@ -70,6 +73,7 @@
     <div class="btn small" id="b-miss"  data-bit="1024">MISL</div>
     <div class="btn small" id="b-beam"  data-bit="512">BEAM</div>
     <div class="btn small" id="b-map"   data-bit="256">MAP</div>
+    <div class="btn small" id="b-cheat" data-bit="32">CHEAT</div>
   </div>
 
   <script>

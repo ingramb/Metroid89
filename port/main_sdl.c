@@ -208,9 +208,9 @@ static Uint32 timer_cb(Uint32 interval, void *param)
 // low bits intentionally match the ARROWS_ROW layout so they can be masked in
 // directly. Keep these values in sync with the constants in shell.html.
 enum {
-    TK_UP = 1, TK_LEFT = 2, TK_DOWN = 4, TK_RIGHT = 8,  // ARROWS_ROW bits
-    TK_SHOOT = 16, TK_JUMP = 64,                         // SEL, DMND (same row)
-    TK_MAP = 0x100, TK_BEAM = 0x200, TK_MISSILE = 0x400  // other rows (see below)
+    TK_UP = 1, TK_LEFT = 2, TK_DOWN = 4, TK_RIGHT = 8,    // ARROWS_ROW bits
+    TK_SHOOT = 16, TK_CHEAT = 32, TK_JUMP = 64,            // SEL, SHIFT, DMND (same row)
+    TK_MAP = 0x100, TK_BEAM = 0x200, TK_MISSILE = 0x400    // other rows (see below)
 };
 static volatile unsigned g_touch = 0;
 EMSCRIPTEN_KEEPALIVE void touch_set_keys(unsigned mask) { g_touch = mask; }
@@ -270,7 +270,7 @@ short _rowread(short mask)
         if (k[SDL_SCANCODE_LSHIFT] || k[SDL_SCANCODE_RSHIFT]) r |= 32; // SHIFT (cheat)
         if (k[SDL_SCANCODE_SPACE])  r |= 64;   // DMND_KEY (diamond / jump)
 #ifdef __EMSCRIPTEN__
-        r |= (short)(g_touch & (TK_UP|TK_LEFT|TK_DOWN|TK_RIGHT|TK_SHOOT|TK_JUMP));
+        r |= (short)(g_touch & (TK_UP|TK_LEFT|TK_DOWN|TK_RIGHT|TK_SHOOT|TK_CHEAT|TK_JUMP));
 #endif
     }
     // ESC_ROW (0xffbf, bit6). Closing the window (SDL_QUIT) also returns ESC so
